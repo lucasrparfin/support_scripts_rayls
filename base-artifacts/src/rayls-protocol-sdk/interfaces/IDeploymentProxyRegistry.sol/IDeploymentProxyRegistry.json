@@ -1,0 +1,207 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IDeploymentProxyRegistry",
+  "sourceName": "src/rayls-protocol-sdk/interfaces/IDeploymentProxyRegistry.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "resourceRegistryAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "teleportAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "endpointAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "tokenRegistryAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "proofsAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "participantStorageAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "zkDvpAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "zkDvpTeleportAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "zkDvpAssetFactoryAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "enygmaCCEventsAddress",
+          "type": "address"
+        }
+      ],
+      "name": "DeploymentUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "getDeployment",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "resourceRegistryAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "teleportAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "endpointAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "tokenRegistryAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "proofsAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "participantStorageAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "zkDvpAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "zkDvpTeleportAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "zkDvpAssetFactoryAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "enygmaCCEventsAddress",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IDeploymentProxyRegistry.Deployment",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "resourceRegistryAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "teleportAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "endpointAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "tokenRegistryAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "proofsAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "participantStorageAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "zkDvpAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "zkDvpTeleportAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "zkDvpAssetFactoryAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "enygmaCCEventsAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setDeployment",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

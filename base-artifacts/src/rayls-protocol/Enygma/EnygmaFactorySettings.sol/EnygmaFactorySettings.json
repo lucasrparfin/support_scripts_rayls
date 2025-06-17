@@ -1,0 +1,236 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "EnygmaFactorySettings",
+  "sourceName": "src/rayls-protocol/Enygma/EnygmaFactorySettings.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "depositToZkDvpVerifierk2",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "depositToZkDvpVerifierk6",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "enygmaVerifierk2",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "enygmaVerifierk6",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_enygmaK2",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_enygmaK6",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_depositK2",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_depositK6",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_withdrawK2",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_withdrawK6",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_zkDvp",
+          "type": "address"
+        }
+      ],
+      "name": "setAllVerifiers",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setDepositToZkDvpVerifierk2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setDepositToZkDvpVerifierk6",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setEnygmaVerifierk2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setEnygmaVerifierk6",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setWithdrawFromZkDvpVerifierk2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setWithdrawFromZkDvpVerifierk6",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_addr",
+          "type": "address"
+        }
+      ],
+      "name": "setZkDvpAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawFromZkDvpVerifierk2",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawFromZkDvpVerifierk6",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "zkDvpAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610443806100206000396000f3fe608060405234801561001057600080fd5b50600436106100c55760003560e01c806314224ecc146100ca5780631dd2fcfd146100fc5780632cf4b2981461012b57806338a1d5231461015b5780633d3c0f0f1461016e5780634ec06e24146101815780637dec26241461020d57806390f61d0114610220578063987ff84e14610250578063a8d4692914610280578063c12ef1da14610293578063cc3f3af0146102c3578063d5c22cb7146102f3578063d8c0e4e914610306578063e5735eba14610319575b600080fd5b6100fa6100d8366004610365565b600580546001600160a01b0319166001600160a01b0392909216919091179055565b005b60035461010f906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6100fa610139366004610365565b600380546001600160a01b0319166001600160a01b0392909216919091179055565b60055461010f906001600160a01b031681565b60005461010f906001600160a01b031681565b6100fa61018f366004610387565b600080546001600160a01b03199081166001600160a01b03998a1617909155600180548216978916979097179096556002805487169588169590951790945560038054861693871693909317909255600480548516918616919091179055600580548416918516919091179055600680549092169216919091179055565b60015461010f906001600160a01b031681565b6100fa61022e366004610365565b600480546001600160a01b0319166001600160a01b0392909216919091179055565b6100fa61025e366004610365565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b60065461010f906001600160a01b031681565b6100fa6102a1366004610365565b600280546001600160a01b0319166001600160a01b0392909216919091179055565b6100fa6102d1366004610365565b600680546001600160a01b0319166001600160a01b0392909216919091179055565b60045461010f906001600160a01b031681565b60025461010f906001600160a01b031681565b6100fa610327366004610365565b600180546001600160a01b0319166001600160a01b0392909216919091179055565b80356001600160a01b038116811461036057600080fd5b919050565b60006020828403121561037757600080fd5b61038082610349565b9392505050565b600080600080600080600060e0888a0312156103a257600080fd5b6103ab88610349565b96506103b960208901610349565b95506103c760408901610349565b94506103d560608901610349565b93506103e360808901610349565b92506103f160a08901610349565b91506103ff60c08901610349565b90509295989194975092955056fea2646970667358221220825e7d9ed7a7399bee6172faa8904ceac9ad2aba59979c44f9f3a15a1cc96dbf64736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100c55760003560e01c806314224ecc146100ca5780631dd2fcfd146100fc5780632cf4b2981461012b57806338a1d5231461015b5780633d3c0f0f1461016e5780634ec06e24146101815780637dec26241461020d57806390f61d0114610220578063987ff84e14610250578063a8d4692914610280578063c12ef1da14610293578063cc3f3af0146102c3578063d5c22cb7146102f3578063d8c0e4e914610306578063e5735eba14610319575b600080fd5b6100fa6100d8366004610365565b600580546001600160a01b0319166001600160a01b0392909216919091179055565b005b60035461010f906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6100fa610139366004610365565b600380546001600160a01b0319166001600160a01b0392909216919091179055565b60055461010f906001600160a01b031681565b60005461010f906001600160a01b031681565b6100fa61018f366004610387565b600080546001600160a01b03199081166001600160a01b03998a1617909155600180548216978916979097179096556002805487169588169590951790945560038054861693871693909317909255600480548516918616919091179055600580548416918516919091179055600680549092169216919091179055565b60015461010f906001600160a01b031681565b6100fa61022e366004610365565b600480546001600160a01b0319166001600160a01b0392909216919091179055565b6100fa61025e366004610365565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b60065461010f906001600160a01b031681565b6100fa6102a1366004610365565b600280546001600160a01b0319166001600160a01b0392909216919091179055565b6100fa6102d1366004610365565b600680546001600160a01b0319166001600160a01b0392909216919091179055565b60045461010f906001600160a01b031681565b60025461010f906001600160a01b031681565b6100fa610327366004610365565b600180546001600160a01b0319166001600160a01b0392909216919091179055565b80356001600160a01b038116811461036057600080fd5b919050565b60006020828403121561037757600080fd5b61038082610349565b9392505050565b600080600080600080600060e0888a0312156103a257600080fd5b6103ab88610349565b96506103b960208901610349565b95506103c760408901610349565b94506103d560608901610349565b93506103e360808901610349565b92506103f160a08901610349565b91506103ff60c08901610349565b90509295989194975092955056fea2646970667358221220825e7d9ed7a7399bee6172faa8904ceac9ad2aba59979c44f9f3a15a1cc96dbf64736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

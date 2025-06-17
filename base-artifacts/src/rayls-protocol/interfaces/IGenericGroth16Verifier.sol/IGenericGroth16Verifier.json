@@ -1,0 +1,481 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IGenericGroth16Verifier",
+  "sourceName": "src/rayls-protocol/interfaces/IGenericGroth16Verifier.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "p1",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "p2",
+          "type": "tuple"
+        }
+      ],
+      "name": "add",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "p",
+          "type": "tuple"
+        }
+      ],
+      "name": "negate",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "_a1",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "x",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "y",
+              "type": "uint256[2]"
+            }
+          ],
+          "internalType": "struct IZkDvp.G2Point",
+          "name": "_a2",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "_b1",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "x",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "y",
+              "type": "uint256[2]"
+            }
+          ],
+          "internalType": "struct IZkDvp.G2Point",
+          "name": "_b2",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "_c1",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "x",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "y",
+              "type": "uint256[2]"
+            }
+          ],
+          "internalType": "struct IZkDvp.G2Point",
+          "name": "_c2",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "_d1",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "x",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "y",
+              "type": "uint256[2]"
+            }
+          ],
+          "internalType": "struct IZkDvp.G2Point",
+          "name": "_d2",
+          "type": "tuple"
+        }
+      ],
+      "name": "pairing",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "p",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "s",
+          "type": "uint256"
+        }
+      ],
+      "name": "scalarMul",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "x",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "y",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IZkDvp.G1Point",
+          "name": "r",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IZkDvp.G1Point",
+              "name": "alpha1",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct IZkDvp.G2Point",
+              "name": "beta2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct IZkDvp.G2Point",
+              "name": "gamma2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct IZkDvp.G2Point",
+              "name": "delta2",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IZkDvp.G1Point[]",
+              "name": "ic",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct IZkDvp.VerifyingKey",
+          "name": "_vk",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IZkDvp.G1Point",
+              "name": "a",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "x",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "y",
+                  "type": "uint256[2]"
+                }
+              ],
+              "internalType": "struct IZkDvp.G2Point",
+              "name": "b",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "x",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "y",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IZkDvp.G1Point",
+              "name": "c",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct IZkDvp.SnarkProof",
+          "name": "_proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "_input",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

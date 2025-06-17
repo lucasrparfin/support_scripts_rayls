@@ -1,0 +1,526 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IEnygmaZkDvpIntegration",
+  "sourceName": "src/rayls-protocol/interfaces/IEnygmaZkDvpIntegration.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "commitment",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "enygmaContractAddress",
+          "type": "address"
+        }
+      ],
+      "name": "DepositToZkDvpSuccesful",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifierAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "VerifierDepositToZkDvpRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifierAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "VerifierWithdrawFromZkDvpRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "x",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "y",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G1Point",
+                  "name": "a",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256[2]",
+                      "name": "x",
+                      "type": "uint256[2]"
+                    },
+                    {
+                      "internalType": "uint256[2]",
+                      "name": "y",
+                      "type": "uint256[2]"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G2Point",
+                  "name": "b",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "x",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "y",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G1Point",
+                  "name": "c",
+                  "type": "tuple"
+                }
+              ],
+              "internalType": "struct IZkDvp.SnarkProof",
+              "name": "proof",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "treeNumbers",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "message",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "merkleRoots",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "commitments",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "nullifiers",
+              "type": "uint256[]"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct IZkDvp.JoinSplitTransaction",
+          "name": "transaction",
+          "type": "tuple"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "enygmaContractAddress",
+          "type": "address"
+        }
+      ],
+      "name": "WithdrawFromZkDvpSuccesful",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "depositToZkDvpVerifier",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "addDepositToZkDvpVerifier",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "withdrawFromZkDvpVerifier",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "addWithdrawFromZkDvpVerifier",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "zkdvpAddress",
+          "type": "address"
+        }
+      ],
+      "name": "addZkDvp",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.Point[]",
+          "name": "commitments",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "pi_b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "public_signal",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IEnygmaZkDvpIntegration.WithdrawOrDepositProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "encryptedMessages",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "depositToZkDvp",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "getDepositToZkDvpVerifierAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "getWithdrawFromZkDvpVerifierAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getZkdvpAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.Point[]",
+          "name": "commitments",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "pi_b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "public_signal",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IEnygmaZkDvpIntegration.WithdrawOrDepositProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "encryptedMessages",
+          "type": "bytes[]"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "x",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "y",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G1Point",
+                  "name": "a",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256[2]",
+                      "name": "x",
+                      "type": "uint256[2]"
+                    },
+                    {
+                      "internalType": "uint256[2]",
+                      "name": "y",
+                      "type": "uint256[2]"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G2Point",
+                  "name": "b",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "x",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "y",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IZkDvp.G1Point",
+                  "name": "c",
+                  "type": "tuple"
+                }
+              ],
+              "internalType": "struct IZkDvp.SnarkProof",
+              "name": "proof",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "treeNumbers",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "message",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "merkleRoots",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "commitments",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "nullifiers",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IZkDvp.JoinSplitTransaction",
+          "name": "transaction",
+          "type": "tuple"
+        }
+      ],
+      "name": "withdrawFromZkDvp",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

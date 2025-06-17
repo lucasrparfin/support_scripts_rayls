@@ -1,0 +1,123 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "EnygmaRegistry",
+  "sourceName": "src/rayls-protocol/Enygma/EnygmaRegistry.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getEnygmaAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getZkDvpIntegrationAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "_enygmaAddr",
+          "type": "address"
+        }
+      ],
+      "name": "registerEnygma",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "_integrationAddr",
+          "type": "address"
+        }
+      ],
+      "name": "registerZkDvpIntegration",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "resourceIdToEnygma",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "resourceIdToZkDvpIntegration",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061022c806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c8063639609df146100675780636ec89347146100ac57806370c3f191146100d557806373b7394a1461011357806375ede10d1461013c578063c06271e614610165575b600080fd5b6100906100753660046101a1565b6000908152600160205260409020546001600160a01b031690565b6040516001600160a01b03909116815260200160405180910390f35b6100906100ba3660046101a1565b6001602052600090815260409020546001600160a01b031681565b6101116100e33660046101ba565b60009182526001602052604090912080546001600160a01b0319166001600160a01b03909216919091179055565b005b6100906101213660046101a1565b6000602081905290815260409020546001600160a01b031681565b61009061014a3660046101a1565b6000908152602081905260409020546001600160a01b031690565b6101116101733660046101ba565b60009182526020829052604090912080546001600160a01b0319166001600160a01b03909216919091179055565b6000602082840312156101b357600080fd5b5035919050565b600080604083850312156101cd57600080fd5b8235915060208301356001600160a01b03811681146101eb57600080fd5b80915050925092905056fea2646970667358221220f601ca9182e969f3927a7de4322eaea97763e10ab3b7c6c02e54a757df956be464736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c8063639609df146100675780636ec89347146100ac57806370c3f191146100d557806373b7394a1461011357806375ede10d1461013c578063c06271e614610165575b600080fd5b6100906100753660046101a1565b6000908152600160205260409020546001600160a01b031690565b6040516001600160a01b03909116815260200160405180910390f35b6100906100ba3660046101a1565b6001602052600090815260409020546001600160a01b031681565b6101116100e33660046101ba565b60009182526001602052604090912080546001600160a01b0319166001600160a01b03909216919091179055565b005b6100906101213660046101a1565b6000602081905290815260409020546001600160a01b031681565b61009061014a3660046101a1565b6000908152602081905260409020546001600160a01b031690565b6101116101733660046101ba565b60009182526020829052604090912080546001600160a01b0319166001600160a01b03909216919091179055565b6000602082840312156101b357600080fd5b5035919050565b600080604083850312156101cd57600080fd5b8235915060208301356001600160a01b03811681146101eb57600080fd5b80915050925092905056fea2646970667358221220f601ca9182e969f3927a7de4322eaea97763e10ab3b7c6c02e54a757df956be464736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

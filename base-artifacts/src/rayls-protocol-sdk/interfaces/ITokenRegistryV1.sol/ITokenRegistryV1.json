@@ -1,0 +1,704 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ITokenRegistryV1",
+  "sourceName": "src/rayls-protocol-sdk/interfaces/ITokenRegistryV1.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EnygmaTokenFreezed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "initialSupply",
+          "type": "uint256"
+        }
+      ],
+      "name": "EnygmaTokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EnygmaTokenUnfreezed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct SharedObjects.ERC1155Supply[]",
+          "name": "initialSupply",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "Erc1155TokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "initialSupply",
+          "type": "uint256"
+        }
+      ],
+      "name": "Erc20TokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "initialSupply",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "Erc721TokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SharedObjects.BalanceUpdateType",
+          "name": "updateType",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ercId",
+              "type": "uint256"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct ITokenRegistryV1.BalanceUpdate",
+          "name": "payload",
+          "type": "tuple"
+        }
+      ],
+      "name": "TokenBalanceUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum ITokenRegistryV1.TokenStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "TokenStatusUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes",
+              "name": "totalSupply",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "issuerChainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "bytecode",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initializerParams",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bool",
+              "name": "isFungible",
+              "type": "bool"
+            },
+            {
+              "internalType": "enum SharedObjects.ErcStandard",
+              "name": "ercStandard",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "isCustom",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint8",
+              "name": "storageSlot",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct SharedObjects.TokenRegistrationData",
+          "name": "tokenData",
+          "type": "tuple"
+        }
+      ],
+      "name": "addToken",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "broadcastCurrentFrozenResourcesForNewParticipant",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "contractVersion",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "freezeEnygmaToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "freezeToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAllTokens",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "resourceId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "issuerChainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "issuerImplementationAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isFungible",
+              "type": "bool"
+            },
+            {
+              "internalType": "enum ITokenRegistryV1.TokenStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "updatedAt",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "url",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "decimals",
+                  "type": "uint8"
+                }
+              ],
+              "internalType": "struct ITokenRegistryV1.TokenMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "internalType": "enum SharedObjects.ErcStandard",
+              "name": "ercStandard",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "storageSlot",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct ITokenRegistryV1.Token[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getTokenByResourceId",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "resourceId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "issuerChainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "issuerImplementationAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isFungible",
+              "type": "bool"
+            },
+            {
+              "internalType": "enum ITokenRegistryV1.TokenStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "updatedAt",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "url",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "decimals",
+                  "type": "uint8"
+                }
+              ],
+              "internalType": "struct ITokenRegistryV1.TokenMetadata",
+              "name": "metadata",
+              "type": "tuple"
+            },
+            {
+              "internalType": "enum SharedObjects.ErcStandard",
+              "name": "ercStandard",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "storageSlot",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct ITokenRegistryV1.Token",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "participantStorageAt",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "resourceRegistryAt",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_endpoint",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "tokenEnygmaIsFreeze",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "unfreezeEnygmaToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "unfreezeToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_enygmaFactory",
+          "type": "address"
+        }
+      ],
+      "name": "updateEnygmaFactory",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum ITokenRegistryV1.TokenStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "name": "updateStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "issuerChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum SharedObjects.BalanceUpdateType",
+          "name": "updateType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes",
+          "name": "metadata",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateTokenBalance",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,12 @@
+{
+    "token": {
+        "name": "Enygma",
+        "symbol": "ENY"
+    },
+    "deployer": {
+        "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
+        "rpcUrl": "http://rayls-node-0-sandbox.api.blockchain-sandbox.parfin.aws/",
+        "chainId": 800000,
+        "endpointAddress": "0x6C362F82C5e37F44b2f91BD474dc5be2CEfD598e"
+    }
+}

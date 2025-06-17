@@ -1,0 +1,29 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ITokenRegistryValidator",
+  "sourceName": "src/rayls-protocol/interfaces/ITokenRegistryValidator.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "resourceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "participantsChainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "validateTokenForParticipant",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,16 @@
+{
+  "name": "light-tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test:zkdvp": "npx hardhat run scripts/ZkDvp_Swap_NFT_Enygma-light.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.24.1"
+  }
+}

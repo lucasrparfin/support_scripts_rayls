@@ -1,0 +1,184 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IMerkle",
+  "sourceName": "src/rayls-protocol/interfaces/IMerkle.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "currentRoot",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTreeId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTreeNumber",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_left",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_right",
+          "type": "uint256"
+        }
+      ],
+      "name": "hashLeftRight",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_treeDepth",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_treeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "_leafHashes",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "insertLeaves",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_treeNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nullifierId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isValidNullifier",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_treeNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_merkleRoot",
+          "type": "uint256"
+        }
+      ],
+      "name": "isValidRoot",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_treeNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nullifierId",
+          "type": "uint256"
+        }
+      ],
+      "name": "setNullifier",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

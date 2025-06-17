@@ -1,0 +1,996 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IEnygmaV1",
+  "sourceName": "src/rayls-protocol/interfaces/IEnygmaV1.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "BalancesFinalised",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "burnValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "BurnSuccessful",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "lastblockNum",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "toChainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "SupplyMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "senderAddress",
+          "type": "address"
+        }
+      ],
+      "name": "TransactionSuccessful",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifierAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "VerifierRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "Name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "Symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "addTransferVerifier",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "burnValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "burn",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkTotalSumOfBalances",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "v",
+          "type": "uint256"
+        }
+      ],
+      "name": "derivePk",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "x2",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "y2",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "r",
+          "type": "uint256"
+        }
+      ],
+      "name": "derivePkH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "x2",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "y2",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBalanceByBlockNumber",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "x",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "y",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBalanceFinalised",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "x",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "y",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBalancePending",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "x",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "y",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getLastblockNumAtCurrentBlockNumber",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPendingMintsAndBurns",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "c1",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "c2",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "chainId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IEnygmaV1.EnygmaPointWithChainId",
+              "name": "pointToAddToBalance",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "blockNumber",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionType",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.PendingMintOrBurn[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPendingTransactions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "c1",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "c2",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "chainId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+              "name": "pointsToAddToBalance",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nullifier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "transactionType",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.PendingTransaction[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPublicValuesByBlockNumber",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "refBalances",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "publicKeys",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPublicValuesFinalised",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "refBalances",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "publicKeys",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPublicValuesPending",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "refBalances",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.EnygmaPointWithChainId[]",
+          "name": "publicKeys",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalRegisteredBanks",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        }
+      ],
+      "name": "getTransferVerifierAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "nullifier",
+          "type": "uint256"
+        }
+      ],
+      "name": "isNullifierUnique",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "toChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintSupply",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "v",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "r",
+          "type": "uint256"
+        }
+      ],
+      "name": "pedCom",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "pedComX",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "pedComY",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.Point[]",
+          "name": "commitments",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "pi_b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "public_signal",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.TransferProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "encryptedMessages",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "transfer",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.Point[]",
+          "name": "commitments",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "pi_b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "public_signal",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.TransferProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "nullifier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastblockNumAtCurrentBlockNum",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentBlockNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "transactionType",
+          "type": "uint8"
+        }
+      ],
+      "name": "zkDvpAddPendingTransaction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "zkDvpFinalisePendingTransactions",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "encryptedMessages",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "zkDvpSendEvents",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "zkDvpSetLastblockNumPending",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "k",
+          "type": "uint8"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "c1",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "c2",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.Point[]",
+          "name": "commitments",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "pi_b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pi_c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "public_signal",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IEnygmaV1.TransferProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "chainIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "nullifier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "zkDvpValidateTransferInputs",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

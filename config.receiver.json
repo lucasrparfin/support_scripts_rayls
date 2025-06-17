@@ -1,0 +1,11 @@
+{
+    "receiver": {
+        "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
+        "rpcUrl": "http://rayls-node-1-sandbox.api.blockchain-sandbox.parfin.aws/",
+        "chainId": 800001,
+        "endpointAddress": "0x28f167B973ba66230d1D591526CDa7dE5afE7f5B"
+    },
+    "token": {
+        "resourceId": "0x0600b8b9e235c0286c80de9e8be71551570e43a53c2a3d98242cd198b372fe3d"
+}
+}

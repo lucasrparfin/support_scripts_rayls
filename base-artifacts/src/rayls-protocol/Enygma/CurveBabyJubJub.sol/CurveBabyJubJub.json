@@ -1,0 +1,63 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "CurveBabyJubJub",
+  "sourceName": "src/rayls-protocol/Enygma/CurveBabyJubJub.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "A",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "D",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "P",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "Q",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60fc610039600b82828239805160001a60731461002c57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060515760003560e01c80630f529ba21460565780638b8fbd92146071578063e493ef8c146097578063f446c1d01460bd575b600080fd5b605f620292f881565b60405190815260200160405180910390f35b605f7f060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f181565b605f7f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f000000181565b605f620292fc8156fea26469706673582212203eb6b34c7843782506547cf60ab5f3b73a4e4a00cf51cce0fd873181b1ed0f7364736f6c63430008180033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060515760003560e01c80630f529ba21460565780638b8fbd92146071578063e493ef8c146097578063f446c1d01460bd575b600080fd5b605f620292f881565b60405190815260200160405180910390f35b605f7f060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f181565b605f7f30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f000000181565b605f620292fc8156fea26469706673582212203eb6b34c7843782506547cf60ab5f3b73a4e4a00cf51cce0fd873181b1ed0f7364736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

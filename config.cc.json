@@ -1,0 +1,8 @@
+{
+    "commitChain": {
+        "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
+        "rpcUrl": "http://commitchain-sandbox.parfin.corp:8545",
+        "chainId": 381660001,
+        "ccDeploymentProxyRegistry": "0xf04686EbBffeb9913Cd8f3EDdF31718992a1c0A2"
+    }
+}
