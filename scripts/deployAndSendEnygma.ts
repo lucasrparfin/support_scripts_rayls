@@ -101,11 +101,7 @@ async function main() {
 
     logStep(`\n3. Chamando submitTokenRegistration(2) no ${tokenName}...`);
     const submitTx = await enygmaTokenContract.submitTokenRegistration(2);
-    await waitForTx(submitTx, 2, `submitTokenRegistration para ${tokenName}`);
-
-    // Aguarda 30 segundos antes de consultar o TokenRegistry
-    logInfo('Aguardando 30 segundos para garantir propagação do registro...');
-    await new Promise(resolve => setTimeout(resolve, 30000));
+    await waitForTx(submitTx, 6, `submitTokenRegistration para ${tokenName}`);
 
     logStep(`\n4. Aprovando Token no TokenRegistry da Commit Chain...`);
     const ccProxyRegistryContract = await getContractInstance(
@@ -150,11 +146,7 @@ async function main() {
       tokenFromRegistry.resourceId,
       1
     );
-    await waitForTx(approveTx, 4, `Aprovação de ${tokenName} no TokenRegistry`);
-
-    // Aguarda 30 segundos antes de continuar
-    logInfo('Aguardando 30 segundos para garantir propagação da aprovação...');
-    await new Promise(resolve => setTimeout(resolve, 30000));
+    await waitForTx(approveTx, 6, `Aprovação de ${tokenName} no TokenRegistry`);
 
     logStep(`\n5. Verificando propriedades do contrato deployado...`);
     const deployedName = await enygmaTokenContract.name();
