@@ -129,8 +129,6 @@ async function main() {
       "Token Registry"
     );
 
-    
-
     const allTokens = await tokenRegistryContract.getAllTokens();
     const tokenFromRegistry = allTokens.find(
       (token: any) => token.name === tokenName && token.symbol === tokenSymbol
@@ -153,6 +151,10 @@ async function main() {
       1
     );
     await waitForTx(approveTx, 4, `Aprovação de ${tokenName} no TokenRegistry`);
+
+    // Aguarda 30 segundos antes de continuar
+    logInfo('Aguardando 30 segundos para garantir propagação da aprovação...');
+    await new Promise(resolve => setTimeout(resolve, 30000));
 
     logStep(`\n5. Verificando propriedades do contrato deployado...`);
     const deployedName = await enygmaTokenContract.name();
