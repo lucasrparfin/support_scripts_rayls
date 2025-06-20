@@ -1,4 +1,5 @@
-import { ethers, Contract, JsonRpcProvider, Wallet, ContractFactory } from "ethers";
+import { ethers, Contract, Wallet, ContractFactory } from "ethers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 export const log = (message: string) => console.log(message);
 export const logSuccess = (message: string) => log(`✅ ${message}`);
@@ -27,7 +28,7 @@ export async function getContractInstance(
   chainId: number,
   contractName: string
 ) {
-  if (!ethers.isAddress(address) || address === ethers.ZeroAddress) {
+  if (!ethers.utils.isAddress(address) || address === '0x0000000000000000000000000000000000000000') {
     throw new Error(`Endereço de ${contractName} é inválido ou ZeroAddress: '${address}'.`);
   }
 
@@ -58,8 +59,8 @@ export async function deployContract(
   ) as any;
 
   const contract = await factory.deploy(...constructorArgs);
-  await contract.waitForDeployment();
-  const address = await contract.getAddress();
+  await contract.deployed();
+  const address = contract.address;
   logSuccess(`${contractName} deployado com sucesso em: ${address}`);
   return contract;
 }

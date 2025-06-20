@@ -1,12 +1,5 @@
-import {
-  ethers,
-  Contract,
-  JsonRpcProvider,
-  Wallet,
-  ContractFactory,
-  EventLog,
-  Log,
-} from "ethers";
+import { ethers, Contract, Wallet, ContractFactory } from "ethers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 import * as path from "path";
 import { expect } from "chai";
 
@@ -100,8 +93,10 @@ async function assertEnygmaDeposit(
   chainIdCC: number,
   enygmaTokenOnPLA: Contract
 ) {
-  logInfo(`  Confirmando transferência de Enygma para ${signerAddress} na rede ${nodeName}.`);
-  
+  logInfo(
+    `  Confirmando transferência de Enygma para ${signerAddress} na rede ${nodeName}.`
+  );
+
   try {
     const enygmaTokenOnCC = await getContractInstance(
       await endpointCC.getAddressByResourceId(enygmaTokenResourceId),
@@ -116,30 +111,35 @@ async function assertEnygmaDeposit(
     const transferEvents = await enygmaTokenOnPLA.queryFilter(
       enygmaTokenOnPLA.filters.Transfer(),
       -1000,
-      'latest'
+      "latest"
     );
-    
-    const relevantTransfers = transferEvents.filter((event: Log | EventLog) => {
-      if (!(event instanceof EventLog)) return false;
+
+    const relevantTransfers = transferEvents.filter((event: any) => {
       const args = event.args;
-      return args && (
-        (args.from.toLowerCase() === signerAddress.toLowerCase() && args.to.toLowerCase() === ethers.ZeroAddress.toLowerCase()) ||
-        (args.to.toLowerCase() === signerAddress.toLowerCase() && args.from.toLowerCase() === ethers.ZeroAddress.toLowerCase())
+      return (
+        args &&
+        ((args.from.toLowerCase() === signerAddress.toLowerCase() &&
+          args.to.toLowerCase() ===
+            "0x0000000000000000000000000000000000000000") ||
+          (args.to.toLowerCase() === signerAddress.toLowerCase() &&
+            args.from.toLowerCase() ===
+              "0x0000000000000000000000000000000000000000"))
       );
     });
-    
-    const hasDepositEvent = relevantTransfers.some((event: Log | EventLog) => {
-      if (!(event instanceof EventLog)) return false;
+
+    const hasDepositEvent = relevantTransfers.some((event: any) => {
       const args = event.args;
-      return args && 
-        args.from.toLowerCase() === signerAddress.toLowerCase() && 
-        args.to.toLowerCase() === ethers.ZeroAddress.toLowerCase() &&
-        args.value === BigInt(amount);
+      return (
+        args &&
+        args.from.toLowerCase() === signerAddress.toLowerCase() &&
+        args.to.toLowerCase() ===
+          "0x0000000000000000000000000000000000000000" &&
+        args.value === BigInt(amount)
+      );
     });
-    
+
     expect(hasDepositEvent).to.be.true;
     logSuccess(`  Transferência confirmada.`);
-    
   } catch (error) {
     logError(`  Erro ao verificar depósito: ${error}`);
     if (error instanceof Error) {
@@ -154,7 +154,6 @@ interface ZkDvpProgramabilityStruct {
   resourceId: string;
   payload: string;
 }
-
 
 async function validatePermissions(
   contract: Contract,
@@ -242,7 +241,7 @@ async function main() {
   let Erc721TokenOnCC: Contract | undefined;
   let ERC721TokenOnPLA: Contract | undefined;
 
-  const sharedId = ethers.keccak256(ethers.randomBytes(32));
+  const sharedId = ethers.utils.keccak256(ethers.utils.randomBytes(32));
 
   try {
     logStep(
@@ -333,7 +332,7 @@ async function main() {
     await waitForTx(tx, 1, `submitTokenRegistration para Enygma Token`);
 
     // Adicionar delay entre transações
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     tx = await Erc721TokenOnPLB.submitTokenRegistration(0);
     await waitForTx(tx, 1, `submitTokenRegistration para ERC721 Token`);
@@ -371,29 +370,27 @@ async function main() {
     logSuccess(`Tokens registrados na Commit Chain.`);
 
     LogForTest(`Aprovando recursos no Token Registry...`);
-    
+
     // Obter o nonce atual e garantir que está atualizado
-    let nonce = await signerCC.getNonce();
+    let nonce = await signerCC.getTransactionCount();
     logInfo(`  Nonce atual: ${nonce}`);
 
     // Primeira aprovação
     tx = await TokenRegistry.updateStatus(enygmaTokenResourceId, 1, {
       gasLimit: 5000000,
-      nonce: nonce
     });
     await waitForTx(tx, 1, `Aprovação de Enygma Token no Token Registry`);
 
     // Aguardar um tempo para garantir que a transação foi processada
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Atualizar o nonce antes da próxima transação
-    nonce = await signerCC.getNonce();
+    nonce = await signerCC.getTransactionCount();
     logInfo(`  Nonce atualizado: ${nonce}`);
 
     // Segunda aprovação com nonce atualizado
     tx = await TokenRegistry.updateStatus(erc721TokenResourceId, 1, {
       gasLimit: 5000000,
-      nonce: nonce
     });
     await waitForTx(tx, 1, `Aprovação de ERC721 Token no Token Registry`);
 
@@ -419,8 +416,8 @@ async function main() {
         );
 
         if (
-          erc721Addr === ethers.ZeroAddress ||
-          enygmaAddr === ethers.ZeroAddress
+          erc721Addr === "0x0000000000000000000000000000000000000000" ||
+          enygmaAddr === "0x0000000000000000000000000000000000000000"
         )
           return false;
 
@@ -548,8 +545,9 @@ async function main() {
     LogForTest(`Swapping NFT for ${PAYMENT_AMOUNT} Enygmas`);
 
     const msg: ZkDvpProgramabilityStruct = {
-      contractAddress: ethers.ZeroAddress,
-      resourceId: ethers.ZeroHash,
+      contractAddress: "0x0000000000000000000000000000000000000000",
+      resourceId:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
       payload: "0x",
     };
 
@@ -603,15 +601,17 @@ async function main() {
         const swapEvents = await ZkDvpTeleport.queryFilter(
           swapStateChangedFilter,
           fromBlockNumber,
-          'latest'
+          "latest"
         );
 
         const stateChangedLog =
-          swapEvents.length > 0 && swapEvents[0] instanceof EventLog
-            ? (swapEvents[0] as EventLog)
-            : undefined;
+          swapEvents.length > 0 ? swapEvents[0] : undefined;
 
-        return !!(stateChangedLog && stateChangedLog.args.state === BigInt(0));
+        return !!(
+          stateChangedLog &&
+          stateChangedLog.args &&
+          stateChangedLog.args.state === BigInt(0)
+        );
       },
       1000,
       300
@@ -631,7 +631,8 @@ async function main() {
           erc721TokenResourceId
         );
 
-        if (erc721AddrOnPLA === ethers.ZeroAddress) return false;
+        if (erc721AddrOnPLA === "0x0000000000000000000000000000000000000000")
+          return false;
 
         const contractInstance = await getContractInstance(
           erc721AddrOnPLA,
@@ -684,7 +685,8 @@ async function main() {
           enygmaTokenResourceId
         );
 
-        if (enygmaAddrOnPLB === ethers.ZeroAddress) return false;
+        if (enygmaAddrOnPLB === "0x0000000000000000000000000000000000000000")
+          return false;
 
         const contractInstance = await getContractInstance(
           enygmaAddrOnPLB,
