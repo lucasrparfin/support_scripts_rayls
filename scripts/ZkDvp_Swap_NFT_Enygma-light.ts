@@ -1,4 +1,4 @@
-import { ethers, Contract, Wallet, ContractFactory } from "ethers";
+import { ethers, Contract, Wallet } from "ethers";
 import { JsonRpcProvider } from "@ethersproject/providers";
 import * as path from "path";
 import { expect } from "chai";
@@ -51,12 +51,10 @@ const zkDvpTeleportArtifact = require(path.join(
   "../base-artifacts/src/rayls-protocol/ZkDvp/ZkDvpTeleport.sol/ZkDvpTeleport.json"
 ));
 
-// Configurações
 const ccConfig = require(path.join(__dirname, "../config.cc.json"));
 const deployerConfig = require(path.join(__dirname, "../config.deployer.json"));
 const receiverConfig = require(path.join(__dirname, "../config.receiver.json"));
 
-// Mock para pollCondition (você precisará da sua implementação real)
 async function pollCondition<T>(
   condition: () => Promise<T | false>,
   interval: number,
@@ -107,35 +105,74 @@ async function assertEnygmaDeposit(
       "EnygmaTokenExample (on CC)"
     );
 
-    const totalSupply = await enygmaTokenOnCC.totalSupply();
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+    const currentBlockNumberPLA =
+      await enygmaTokenOnPLA.provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlockNumberPLA - 100);
+
+    logInfo(
+      `  Consultando eventos Transfer na PL A do bloco ${fromBlock} até 'latest'.`
+    );
     const transferEvents = await enygmaTokenOnPLA.queryFilter(
       enygmaTokenOnPLA.filters.Transfer(),
-      -1000,
+      fromBlock,
       "latest"
     );
 
+    logInfo(
+      `  Total de eventos Transfer encontrados na PL A: ${transferEvents.length}`
+    );
+
     const relevantTransfers = transferEvents.filter((event: any) => {
+      if (!event.args) {
+        logInfo(`    - Evento ignorado (sem args): ${JSON.stringify(event)}`);
+        return false;
+      }
       const args = event.args;
-      return (
-        args &&
-        ((args.from.toLowerCase() === signerAddress.toLowerCase() &&
-          args.to.toLowerCase() ===
-            "0x0000000000000000000000000000000000000000") ||
-          (args.to.toLowerCase() === signerAddress.toLowerCase() &&
-            args.from.toLowerCase() ===
-              "0x0000000000000000000000000000000000000000"))
+
+      const fromAddr = args.from.toLowerCase();
+      const toAddr = args.to.toLowerCase();
+      const signerAddrLower = signerAddress.toLowerCase();
+      const zeroAddrLower = ZERO_ADDRESS.toLowerCase();
+
+      logInfo(
+        `    - Evento Original: from=${fromAddr}, to=${toAddr}, value=${
+          args.value ? args.value.toString() : "N/A"
+        }`
       );
+      logInfo(
+        `      Condição de Filtro (Depósito/Retirada): (from=${signerAddrLower} && to=${zeroAddrLower}) || (to=${signerAddrLower} && from=${zeroAddrLower})`
+      );
+      const isRelevant =
+        (fromAddr === signerAddrLower && toAddr === zeroAddrLower) ||
+        (toAddr === signerAddrLower && fromAddr === zeroAddrLower);
+      logInfo(`      É relevante (filtro inicial)? ${isRelevant}`);
+
+      return isRelevant;
     });
 
+    logInfo(
+      `  Total de eventos Transfer RELEVANTES encontrados: ${relevantTransfers.length}`
+    );
+
     const hasDepositEvent = relevantTransfers.some((event: any) => {
+      if (!event.args) return false;
       const args = event.args;
-      return (
-        args &&
-        args.from.toLowerCase() === signerAddress.toLowerCase() &&
-        args.to.toLowerCase() ===
-          "0x0000000000000000000000000000000000000000" &&
-        args.value === BigInt(amount)
-      );
+
+      const fromAddr = args.from.toLowerCase();
+      const toAddr = args.to.toLowerCase();
+      const signerAddrLower = signerAddress.toLowerCase();
+      const zeroAddrLower = ZERO_ADDRESS.toLowerCase();
+
+      const expectedAmountBigNumber = ethers.BigNumber.from(amount);
+
+      const isFromSigner = fromAddr === signerAddrLower;
+      const isToZeroAddress = toAddr === zeroAddrLower;
+      const isValueCorrect =
+        args.value && args.value.eq(expectedAmountBigNumber);
+
+      return isFromSigner && isToZeroAddress && isValueCorrect;
     });
 
     expect(hasDepositEvent).to.be.true;
@@ -378,6 +415,8 @@ async function main() {
     // Primeira aprovação
     tx = await TokenRegistry.updateStatus(enygmaTokenResourceId, 1, {
       gasLimit: 5000000,
+      nonce: nonce,
+      gasPrice: 0,
     });
     await waitForTx(tx, 1, `Aprovação de Enygma Token no Token Registry`);
 
@@ -391,6 +430,8 @@ async function main() {
     // Segunda aprovação com nonce atualizado
     tx = await TokenRegistry.updateStatus(erc721TokenResourceId, 1, {
       gasLimit: 5000000,
+      nonce: nonce,
+      gasPrice: 0,
     });
     await waitForTx(tx, 1, `Aprovação de ERC721 Token no Token Registry`);
 
@@ -475,11 +516,20 @@ async function main() {
       async (): Promise<boolean> => {
         const currentEnygmaSupply = await EnygmaTokenOnCC!.totalSupply();
         const currentNftSupply = await Erc721TokenOnCC!.getTotalSupply();
+        const expectedEnygmaSupply = enygmaBalanceBeforeMint.add(
+          BigInt(TOTAL_AMOUNT)
+        );
+
+        logInfo(
+          `  currentEnygmaSupply === expectedEnygmaSupply: ${currentEnygmaSupply.eq(
+            expectedEnygmaSupply
+          )}`
+        );
 
         return (
-          currentEnygmaSupply ===
-            enygmaBalanceBeforeMint + BigInt(TOTAL_AMOUNT) &&
-          currentNftSupply.length === nftBalanceBefore.length + 1
+          currentEnygmaSupply.eq(
+            BigInt(enygmaBalanceBeforeMint) + BigInt(TOTAL_AMOUNT)
+          ) && currentNftSupply.length === nftBalanceBefore.length + 1
         );
       },
       1000,
@@ -539,9 +589,7 @@ async function main() {
     expect(nftOwnedByZkDvp).to.be.true;
     logSuccess(`Depósitos concluídos.`);
 
-    logStep(
-      `\n6. Realizando Swap de NFT por ${PAYMENT_AMOUNT} Enygmas - Sem calldata...`
-    );
+    logStep(`\n6. Realizando Swap de NFT por ${PAYMENT_AMOUNT} Enygmas`);
     LogForTest(`Swapping NFT for ${PAYMENT_AMOUNT} Enygmas`);
 
     const msg: ZkDvpProgramabilityStruct = {
@@ -575,14 +623,31 @@ async function main() {
     );
     await waitForTx(tx, 1, `Swap de Enygma (lado A)`);
 
-    LogForTest(`Waiting for calldata to be executed`);
+    LogForTest(`Aguardando calldata ser executado`);
     const calldataExecuted = await pollCondition(
       async (): Promise<boolean> => {
         const executions = await ZkDvpTeleport.calldataExecutions(sharedId);
-        return executions === BigInt(2);
+
+        // --- CORREÇÃO AQUI ---
+        // Adicione um log para verificar o tipo exato de 'executions'
+        logInfo(
+          `  Tipo de 'executions': ${typeof executions}, Valor: ${executions.toString()}`
+        );
+
+        // Compare 'executions' (que agora sabemos que não tem .eq) com um BigInt
+        // Convertemos '2' para BigInt para a comparação.
+        const expectedValue = 2;
+        const comparisonResult = executions === expectedValue; // Use comparação estrita para BigInt com BigInt
+        // --- FIM DA CORREÇÃO ---
+
+        logInfo(
+          `  Calldata Executions: ${executions.toString()}, Expected: ${expectedValue.toString()}, Match: ${comparisonResult}`
+        ); // Mantém o log para depuração
+
+        return comparisonResult;
       },
       1000,
-      300
+      300 // Manter 300 por enquanto, mas pode precisar aumentar se for problema de tempo
     );
     if (calldataExecuted === false) {
       throw new Error(
@@ -592,7 +657,7 @@ async function main() {
     expect(calldataExecuted).to.be.true;
     logSuccess(`Calldata executado.`);
 
-    LogForTest(`Waiting for swap to be completed`);
+    LogForTest(`Aguardando o swap ser concluído`);
     const swapStateChangedFilter =
       ZkDvpTeleport.filters.SwapStateChanged(sharedId);
 
@@ -607,15 +672,25 @@ async function main() {
         const stateChangedLog =
           swapEvents.length > 0 ? swapEvents[0] : undefined;
 
-        return !!(
-          stateChangedLog &&
-          stateChangedLog.args &&
-          stateChangedLog.args.state === BigInt(0)
-        );
+        if (stateChangedLog && stateChangedLog.args) {
+          const currentState = stateChangedLog.args.state;
+
+          // Adicione este log para confirmar que continua sendo 'number'
+          logInfo(
+            `  Tipo de 'stateChangedLog.args.state': ${typeof currentState}, Valor: ${currentState.toString()}`
+          );
+
+          // --- CORREÇÃO AQUI ---
+          // Como 'currentState' é um 'number', compare-o diretamente com 0
+          return currentState === 0;
+          // --- FIM DA CORREÇÃO ---
+        }
+        return false; // Se stateChangedLog ou args não existirem
       },
       1000,
-      300
+      300 // Mantenha ou aumente o timeout se o problema persistir após esta correção
     );
+
     if (swapCompleted === false) {
       throw new Error("Swap não concluído dentro do tempo limite.");
     }
@@ -718,15 +793,32 @@ async function main() {
     tx = await EnygmaTokenOnPLB!.callWithdrawFromZkDvp(PAYMENT_AMOUNT);
     await waitForTx(tx, 1, `Retirada de ${PAYMENT_AMOUNT} Enygmas por PL B`);
 
-    LogForTest(`Waiting for Enygmas to be withdrawn`);
-
+    LogForTest(`Aguardando saque de Enygmas`);
     const enygmasWithdrawn = await pollCondition(
       async (): Promise<boolean> => {
         const balance = await EnygmaTokenOnPLB!.balanceOf(signerB.address);
-        return balance === BigInt(PAYMENT_AMOUNT);
+
+        // Adicione este log para depuração, se quiser:
+        logInfo(
+          `  Tipo de 'balance': ${typeof balance}, Valor: ${balance.toString()}`
+        );
+        logInfo(`  Valor esperado (PAYMENT_AMOUNT): ${PAYMENT_AMOUNT}`);
+
+        // --- CORREÇÃO AQUI ---
+        // 'balance' é um ethers.utils.BigNumber (tipo 'object').
+        // Converta PAYMENT_AMOUNT para BigNumber e use o método .eq() para comparação.
+        const expectedBalance = ethers.BigNumber.from(PAYMENT_AMOUNT);
+        const comparisonResult = balance.eq(expectedBalance); // Use .eq() para comparar BigNumber
+
+        logInfo(
+          `  Comparação BigNumber (balance.eq(expected)): ${comparisonResult}`
+        );
+        // --- FIM DA CORREÇÃO ---
+
+        return comparisonResult;
       },
       1000,
-      300
+      300 // Mantenha 300 ou aumente se o problema persistir APÓS esta correção
     );
     if (enygmasWithdrawn === false) {
       throw new Error("Enygmas não retirados na PL B dentro do tempo limite.");
@@ -751,16 +843,48 @@ async function main() {
     );
     await waitForTx(tx, 1, `Cross transfer de Enygmas`);
 
-    LogForTest(`Waiting for cross transfer to be completed`);
+    LogForTest(`Aguardando cross transfer ser completada`);
     const crossTransferCompleted = await pollCondition(
       async (): Promise<boolean> => {
-        const balance = await EnygmaTokenOnPLA.balanceOf(signerA.address);
-        return (
-          balance === enygmaBalanceBeforeCrossTransfer + BigInt(PAYMENT_AMOUNT)
+        const balance = await EnygmaTokenOnPLA!.balanceOf(signerA.address); // 'balance' será um BigNumber (ethers v5)
+
+        // Adicione este log crucial para depuração!
+        logInfo(
+          `  Tipo de 'balance': ${typeof balance}, Valor: ${
+            balance.toString ? balance.toString() : balance
+          }`
         );
+        logInfo(
+          `  Tipo de 'enygmaBalanceBeforeCrossTransfer': ${typeof enygmaBalanceBeforeCrossTransfer}, Valor: ${
+            enygmaBalanceBeforeCrossTransfer.toString
+              ? enygmaBalanceBeforeCrossTransfer.toString()
+              : enygmaBalanceBeforeCrossTransfer
+          }`
+        );
+        logInfo(`  PAYMENT_AMOUNT (number): ${PAYMENT_AMOUNT}`);
+
+        // --- CORREÇÃO AQUI ---
+        // 1. Garanta que 'enygmaBalanceBeforeCrossTransfer' é tratado como BigNumber
+        //    (Ele já deve ser um BigNumber se veio de balanceOf)
+        // 2. Converta PAYMENT_AMOUNT para BigNumber
+        const amountToAdd = ethers.BigNumber.from(PAYMENT_AMOUNT);
+
+        // 3. Some os BigNumbers usando o método .add()
+        const expectedBalanceBigNumber =
+          enygmaBalanceBeforeCrossTransfer.add(amountToAdd);
+
+        // 4. Compare os BigNumbers usando o método .eq()
+        const comparisonResult = balance.eq(expectedBalanceBigNumber);
+        // --- FIM DA CORREÇÃO ---
+
+        logInfo(`  Expected Balance: ${expectedBalanceBigNumber.toString()}`);
+        logInfo(
+          `  Comparação (balance === expectedBalance): ${comparisonResult}`
+        );
+        return comparisonResult;
       },
       1000,
-      300
+      300 // Mantenha ou aumente este timeout se o problema persistir após a correção de tipo
     );
     if (crossTransferCompleted === false) {
       throw new Error(

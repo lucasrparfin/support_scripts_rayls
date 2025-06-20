@@ -5,8 +5,10 @@ export const log = (message: string) => console.log(message);
 export const logSuccess = (message: string) => log(`✅ ${message}`);
 export const logInfo = (message: string) => log(`ℹ️ ${message}`);
 export const logStep = (message: string) => log(`➡️ ${message}`);
-export const logError = (message: string) => console.error(`❌ ERRO: ${message}`);
-export const logWarning = (message: string) => console.warn(`⚠️ ALERTA: ${message}`);
+export const logError = (message: string) =>
+  console.error(`❌ ERRO: ${message}`);
+export const logWarning = (message: string) =>
+  console.warn(`⚠️ ALERTA: ${message}`);
 
 export async function setupWalletAndProvider(
   rpcUrl: string,
@@ -28,19 +30,30 @@ export async function getContractInstance(
   chainId: number,
   contractName: string
 ) {
-  if (!ethers.utils.isAddress(address) || address === '0x0000000000000000000000000000000000000000') {
-    throw new Error(`Endereço de ${contractName} é inválido ou ZeroAddress: '${address}'.`);
+  if (
+    !ethers.utils.isAddress(address) ||
+    address === "0x0000000000000000000000000000000000000000"
+  ) {
+    throw new Error(
+      `Endereço de ${contractName} é inválido ou ZeroAddress: '${address}'.`
+    );
   }
 
   const contract = new Contract(address, abi, wallet) as any;
   logInfo(`  Contrato ${contractName} instanciado em: ${address}`);
 
   const code = await provider.getCode(address);
-  if (code === '0x') {
-    logError(`  ❌ Não há código de contrato no endereço de ${contractName}: ${address}.`);
-    throw new Error(`${contractName} não deployado ou endereço incorreto na rede ${chainId}.`);
+  if (code === "0x") {
+    logError(
+      `  ❌ Não há código de contrato no endereço de ${contractName}: ${address}.`
+    );
+    throw new Error(
+      `${contractName} não deployado ou endereço incorreto na rede ${chainId}.`
+    );
   } else {
-    logInfo(`  Código de contrato encontrado no endereço de ${contractName}. ✅`);
+    logInfo(
+      `  Código de contrato encontrado no endereço de ${contractName}. ✅`
+    );
   }
   return contract;
 }
@@ -65,7 +78,11 @@ export async function deployContract(
   return contract;
 }
 
-export async function waitForTx(tx: any, confirmations: number, actionName: string) {
+export async function waitForTx(
+  tx: any,
+  confirmations: number,
+  actionName: string
+) {
   logInfo(`  Aguardando ${confirmations} confirmações para '${actionName}'...`);
   const receipt = await tx.wait(confirmations);
   if (receipt?.status === 1) {
