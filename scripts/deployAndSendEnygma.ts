@@ -38,6 +38,22 @@ const tokenRegistryArtifact = require(path.join(
   "../base-artifacts/src/commitChain/TokenRegistry/TokenRegistryV1.sol/TokenRegistryV1.json"
 ));
 
+async function pollCondition(
+  condition: () => Promise<boolean>,
+  interval: number,
+  maxAttempts: number
+): Promise<boolean> {
+  let attempts = 0;
+  while (attempts < maxAttempts) {
+    if (await condition()) {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, interval));
+    attempts++;
+  }
+  return false;
+}
+
 async function main() {
   const randHexSuffix = genRanHex(6);
   const tokenName = deployerConfig.token.name + `_${randHexSuffix}`;
@@ -55,6 +71,11 @@ async function main() {
   const receiverRpcUrl = receiverConfig.receiver.rpcUrl;
   const receiverChainId = receiverConfig.receiver.chainId;
   const receiverPrivateKey = receiverConfig.receiver.privateKey;
+
+  const ZERO_GAS_SETUP = {
+    gasPrice: 0,
+    gasLimit: 30000000,
+  };
 
   log(`\n--- 🚀 Iniciando o Processo de Deploy e Registro de Token ---`);
   logInfo(`Configurações carregadas.`);
@@ -88,28 +109,27 @@ async function main() {
         "Commit Chain Deployer"
       );
 
-      const enygmaToken = await deployContract(
-        EnygmaTokenArtifact,
-        deployerWallet,
-        [tokenName, tokenSymbol, endpointAddress],
-        tokenName
-      );
-      const enygmaTokenAddress = enygmaToken.address;
-  
-      const enygmaTokenContract = await getContractInstance(
-        enygmaTokenAddress,
-        EnygmaTokenArtifact.abi,
-        deployerWallet,
-        provider,
-        chainId,
-        tokenName
-      );
+    const enygmaToken = await deployContract(
+      EnygmaTokenArtifact,
+      deployerWallet,
+      [tokenName, tokenSymbol, endpointAddress],
+      tokenName
+    );
+    const enygmaTokenAddress = enygmaToken.address;
 
-    logStep(`\n3. Chamando submitTokenRegistration(2) no ${tokenName}...`);
-    const submitTx = await enygmaTokenContract.submitTokenRegistration(2);
-    await waitForTx(submitTx, 6, `submitTokenRegistration para ${tokenName}`);
+    const enygmaTokenContract = await getContractInstance(
+      enygmaTokenAddress,
+      EnygmaTokenArtifact.abi,
+      deployerWallet,
+      provider,
+      chainId,
+      tokenName
+    );
 
-    logStep(`\n4. Aprovando Token no TokenRegistry da Commit Chain...`);
+    logStep(`\n2. Chamando submitTokenRegistration(2) no ${tokenName}...`);
+    await enygmaTokenContract.submitTokenRegistration(2, ZERO_GAS_SETUP);
+
+    logStep(`\n3. Aprovando Token no TokenRegistry da Commit Chain...`);
     const ccProxyRegistryContract = await getContractInstance(
       ccProxyRegistryAddress,
       ccProxyRegistryArtifact.abi,
@@ -131,44 +151,75 @@ async function main() {
       "Token Registry"
     );
 
-    let ccNonce = await ccWallet.getTransactionCount();
-    logInfo(`  Nonce atual para Commit Chain: ${ccNonce}`);
+    logInfo(`  Aguardando o token '${tokenName}' aparecer no TokenRegistry...`);
 
-    const allTokens = await tokenRegistryContract.getAllTokens();
-    const tokenFromRegistry = allTokens.find(
-      (token: any) => token.name === tokenName && token.symbol === tokenSymbol
+    let tokenResourceId: string | undefined = undefined;
+    const tokenFound = await pollCondition(
+      async (): Promise<boolean> => {
+        const allTokens = await tokenRegistryContract.getAllTokens();
+        const foundToken = allTokens.find(
+          (token: any) =>
+            token.name === tokenName && token.symbol === tokenSymbol
+        );
+        if (foundToken) {
+          tokenResourceId = foundToken.resourceId;
+          return true;
+        }
+        return false;
+      },
+      10000,
+      30
     );
 
-    if (!tokenFromRegistry) {
+    if (!tokenFound || !tokenResourceId) {
       throw new Error(
-        `Token ${tokenName} com símbolo ${tokenSymbol} não encontrado no TokenRegistry.`
+        `Token ${tokenName} com símbolo ${tokenSymbol} não encontrado no TokenRegistry após o tempo limite.`
       );
     }
 
     logSuccess(
-      `Token encontrado no TokenRegistry: ${tokenFromRegistry.name} (${tokenFromRegistry.symbol})`
+      `Token encontrado no TokenRegistry com Resource ID: ${tokenResourceId}`
     );
-    logInfo(`  Resource ID do Token: ${tokenFromRegistry.resourceId}`);
 
-    logInfo(`  Atualizando status do token para APROVADO (1)...`);
-    const approveTx = await tokenRegistryContract.updateStatus(
-      tokenFromRegistry.resourceId,
+    logInfo(
+      `  Enviando transação para atualizar status do token para APROVADO (1)...`
+    );
+    await tokenRegistryContract.updateStatus(
+      tokenResourceId,
       1,
-      {
-        gasPrice: 0,
-        nonce: ccNonce,
-      }
+      ZERO_GAS_SETUP
     );
-    await waitForTx(approveTx, 6, `Aprovação de ${tokenName} no TokenRegistry`);
 
-    logStep(`\n5. Verificando propriedades do contrato deployado...`);
+    logInfo(
+      `  Aguardando o status do token '${tokenName}' ser atualizado para APROVADO...`
+    );
+    const statusApproved = await pollCondition(
+      async (): Promise<boolean> => {
+        const allTokens = await tokenRegistryContract.getAllTokens();
+        const updatedToken = allTokens.find(
+          (token: any) => token.resourceId === tokenResourceId
+        );
+        return updatedToken && updatedToken.status == BigInt(1);
+      },
+      10000,
+      30
+    );
+
+    if (!statusApproved) {
+      throw new Error(
+        `Status do Token ${tokenName} não foi atualizado para APROVADO após o tempo limite.`
+      );
+    }
+    logSuccess(`Status do Token ${tokenName} atualizado para APROVADO.`);
+
+    logStep(`\n4. Verificando propriedades do contrato deployado...`);
     const deployedName = await enygmaTokenContract.name();
     const deployedSymbol = await enygmaTokenContract.symbol();
     logInfo(`  - Nome do Token: ${deployedName}`);
     logInfo(`  - Símbolo do Token: ${deployedSymbol}`);
     logInfo(`  - Endereço do Deployer: ${deployerWallet.address}`);
 
-    logStep(`\n6. Mintando 1000 tokens para o deployer...`);
+    logStep(`\n5. Mintando 1000 tokens para o deployer...`);
     const mintAmount = ethers.utils.parseEther("1000");
 
     logInfo(
@@ -196,7 +247,7 @@ async function main() {
       )} ${tokenSymbol}`
     );
 
-    logStep(`\n7. Teleportando 100 tokens para o receiver...`);
+    logStep(`\n6. Teleportando 100 tokens para o receiver...`);
     logInfo(`  Endereço do Receiver: ${receiverAddress}`);
     logInfo(`  Chain ID do Receiver: ${receiverChainId}`);
 
@@ -211,7 +262,9 @@ async function main() {
     await waitForTx(
       teleportTx,
       1,
-      `Teleport de ${ethers.utils.formatEther(teleportAmount)} tokens para ${receiverAddress}`
+      `Teleport de ${ethers.utils.formatEther(
+        teleportAmount
+      )} tokens para ${receiverAddress}`
     );
 
     log(`\n--- ✨ Deploy e Registro de Token Finalizados com Sucesso! ---`);

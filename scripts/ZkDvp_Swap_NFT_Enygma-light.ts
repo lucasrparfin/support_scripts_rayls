@@ -15,6 +15,12 @@ import {
   waitForTx,
 } from "./utils";
 
+function genRanHex(size: number) {
+  return [...Array(size)]
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join("");
+}
+
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
   "../base-artifacts/src/rayls-protocol/test-contracts/EnygmaTokenExample.sol/EnygmaTokenExample.json"
@@ -71,12 +77,6 @@ async function pollCondition<T>(
 }
 
 const LogForTest = (message: string) => logInfo(message);
-
-function genRanHex(size: number) {
-  return [...Array(size)]
-    .map(() => Math.floor(Math.random() * 16).toString(16))
-    .join("");
-}
 
 async function assertEnygmaDeposit(
   signerCC: Wallet,
@@ -222,6 +222,11 @@ async function main() {
   const chainIdB = receiverConfig.receiver.chainId;
   const chainIdCC = ccConfig.commitChain.chainId;
 
+  const ZERO_GAS_SETUP = {
+    gasPrice: 0,
+    gasLimit: 30000000,
+  };
+
   log(`\n--- 🚀 Iniciando o Processo de Teste E2E ZkDvpSwap ---`);
   logInfo(`Configurações carregadas.`);
   logInfo(`RPC URL Node A: ${rpcUrlA}`);
@@ -362,16 +367,14 @@ async function main() {
       `Registrando Enygma token na PL A, ERC721 token na PL B e Aprovando no Token Registry na CC`
     );
 
-    let tx = await EnygmaTokenOnPLA.submitTokenRegistration(0);
+    let tx = await EnygmaTokenOnPLA.submitTokenRegistration(0, ZERO_GAS_SETUP);
     await waitForTx(tx, 1, `submitTokenRegistration para Enygma Token`);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    tx = await Erc721TokenOnPLB.submitTokenRegistration(0);
+    tx = await Erc721TokenOnPLB.submitTokenRegistration(0, ZERO_GAS_SETUP);
     await waitForTx(tx, 1, `submitTokenRegistration para ERC721 Token`);
 
-    LogForTest(
-      `Aguardando que Enygma token e ERC721 token sejam registrados na CC`
+    logInfo(
+      `  Aguardando que Enygma token e ERC721 token sejam registrados na CC...`
     );
     const registered = await pollCondition(
       async (): Promise<boolean> => {
@@ -404,30 +407,22 @@ async function main() {
 
     LogForTest(`Aprovando recursos no Token Registry...`);
 
-    let nonce = await signerCC.getTransactionCount();
-    logInfo(`  Nonce atual: ${nonce}`);
-
-    tx = await TokenRegistry.updateStatus(enygmaTokenResourceId, 1, {
-      gasLimit: 5000000,
-      nonce: nonce,
-      gasPrice: 0,
-    });
+    tx = await TokenRegistry.updateStatus(
+      enygmaTokenResourceId,
+      1,
+      ZERO_GAS_SETUP
+    );
     await waitForTx(tx, 1, `Aprovação de Enygma Token no Token Registry`);
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    nonce = await signerCC.getTransactionCount();
-    logInfo(`  Nonce atualizado para a próxima transação: ${nonce}`);
-
-    tx = await TokenRegistry.updateStatus(erc721TokenResourceId, 1, {
-      gasLimit: 5000000,
-      nonce: nonce,
-      gasPrice: 0,
-    });
+    tx = await TokenRegistry.updateStatus(
+      erc721TokenResourceId,
+      1,
+      ZERO_GAS_SETUP
+    );
     await waitForTx(tx, 1, `Aprovação de ERC721 Token no Token Registry`);
 
-    LogForTest(
-      `Aguardando que Enygma token e ERC721 token sejam aprovados na CC`
+    logInfo(
+      `  Aguardando que Enygma token e ERC721 token sejam aprovados na CC...`
     );
 
     const approvedContracts = await pollCondition(
@@ -489,8 +484,10 @@ async function main() {
     logStep(`\n4. Mintando ${TOTAL_AMOUNT} Enygmas e 1x ERC721 NFT...`);
     LogForTest(`Minting ${TOTAL_AMOUNT} Enygmas e ERC721 NFT`);
 
-    const enygmaBalanceBeforeMint = await EnygmaTokenOnCC!.totalSupply();
-    const nftBalanceBefore = await Erc721TokenOnCC!.getTotalSupply();
+    const enygmaBalanceBeforeMint = await EnygmaTokenOnPLA.balanceOf(
+      signerA.address
+    );
+    const nftBalanceBefore = await Erc721TokenOnPLB.balanceOf(signerB.address);
 
     LogForTest(`Minting Enygmas`);
     tx = await EnygmaTokenOnPLA.mint(signerA.address, TOTAL_AMOUNT);
@@ -500,27 +497,19 @@ async function main() {
     tx = await Erc721TokenOnPLB.mint(signerB.address, NFT_ID, []);
     await waitForTx(tx, 1, `Mint de NFT com ID ${NFT_ID}`);
 
-    LogForTest(
-      `Aguardando que Enygma token e ERC721 token sejam mintados na CC`
-    );
+    logInfo(`  Aguardando que os tokens sejam mintados na PLs...`);
     const minted = await pollCondition(
       async (): Promise<boolean> => {
-        const currentEnygmaSupply = await EnygmaTokenOnCC!.totalSupply();
-        const currentNftSupply = await Erc721TokenOnCC!.getTotalSupply();
-        const expectedEnygmaSupply = enygmaBalanceBeforeMint.add(
-          BigInt(TOTAL_AMOUNT)
+        const currentEnygmaBalance = await EnygmaTokenOnPLA.balanceOf(
+          signerA.address
         );
-
-        logInfo(
-          `  currentEnygmaSupply === expectedEnygmaSupply: ${currentEnygmaSupply.eq(
-            expectedEnygmaSupply
-          )}`
+        const currentNftBalance = await Erc721TokenOnPLB.balanceOf(
+          signerB.address
         );
 
         return (
-          currentEnygmaSupply.eq(
-            BigInt(enygmaBalanceBeforeMint) + BigInt(TOTAL_AMOUNT)
-          ) && currentNftSupply.length === nftBalanceBefore.length + 1
+          currentEnygmaBalance.eq(enygmaBalanceBeforeMint.add(TOTAL_AMOUNT)) &&
+          currentNftBalance.eq(nftBalanceBefore.add(1))
         );
       },
       1000,
@@ -528,7 +517,7 @@ async function main() {
     );
     if (minted === false) {
       throw new Error(
-        "Enygma token ou ERC721 token não mintados na CC dentro do tempo limite."
+        "Enygma token ou ERC721 token não mintados nas PLs dentro do tempo limite."
       );
     }
     expect(minted).to.be.true;
@@ -562,10 +551,11 @@ async function main() {
     tx = await Erc721TokenOnPLB.depositIntoZkdvp(NFT_ID);
     await waitForTx(tx, 1, `Depósito de NFT com ID ${NFT_ID}`);
 
-    LogForTest(`Checking whether the NFT is now owned by ZkDvp`);
+    logInfo(`  Aguardando o NFT ser transferido para o ZkDvp na CC...`);
 
     const nftOwnedByZkDvp = await pollCondition(
       async (): Promise<boolean> => {
+        if (!Erc721TokenOnCC) return false;
         const owner = await Erc721TokenOnCC!.ownerOf(NFT_ID);
         return owner === zkDvpAddress;
       },
@@ -599,7 +589,8 @@ async function main() {
       enygmaTokenResourceId,
       chainIdA,
       sharedId,
-      msg
+      msg,
+      ZERO_GAS_SETUP
     );
     await waitForTx(tx, 1, `Swap de NFT (lado B)`);
 
@@ -610,27 +601,16 @@ async function main() {
       PAYMENT_AMOUNT,
       chainIdB,
       sharedId,
-      msg
+      msg,
+      ZERO_GAS_SETUP
     );
     await waitForTx(tx, 1, `Swap de Enygma (lado A)`);
 
-    LogForTest(`Aguardando calldata ser executado`);
+    logInfo(`  Aguardando calldata ser executado...`);
     const calldataExecuted = await pollCondition(
       async (): Promise<boolean> => {
         const executions = await ZkDvpTeleport.calldataExecutions(sharedId);
-
-        logInfo(
-          `  Tipo de 'executions': ${typeof executions}, Valor: ${executions.toString()}`
-        );
-
-        const expectedValue = 2;
-        const comparisonResult = executions === expectedValue;
-
-        logInfo(
-          `  Calldata Executions: ${executions.toString()}, Expected: ${expectedValue.toString()}, Match: ${comparisonResult}`
-        );
-
-        return comparisonResult;
+        return executions === 2;
       },
       1000,
       300
@@ -643,7 +623,7 @@ async function main() {
     expect(calldataExecuted).to.be.true;
     logSuccess(`Calldata executado.`);
 
-    LogForTest(`Aguardando o swap ser concluído`);
+    logInfo(`  Aguardando o swap ser concluído...`);
     const swapStateChangedFilter =
       ZkDvpTeleport.filters.SwapStateChanged(sharedId);
 
@@ -660,11 +640,6 @@ async function main() {
 
         if (stateChangedLog && stateChangedLog.args) {
           const currentState = stateChangedLog.args.state;
-
-          logInfo(
-            `  Tipo de 'stateChangedLog.args.state': ${typeof currentState}, Valor: ${currentState.toString()}`
-          );
-
           return currentState === 0;
         }
         return false;
@@ -679,8 +654,8 @@ async function main() {
     expect(swapCompleted).to.be.true;
     logSuccess(`Swap concluído com sucesso.`);
 
-    logStep(`\n7. PL A Withdraws ERC721 NFT...`);
-    LogForTest(`PL A withdrawing NFT`);
+    logStep(`\n7. PL A Retira ERC721 NFT...`);
+    LogForTest(`PL A retirando NFT`);
 
     const erc721DeployedOnPLA = await pollCondition(
       async (): Promise<Contract | false> => {
@@ -715,13 +690,14 @@ async function main() {
 
     logSuccess(`ERC721 token deployado na PL A.`);
 
-    LogForTest(`Withdrawing NFT`);
+    LogForTest(`Retirando NFT`);
     tx = await ERC721TokenOnPLA!.withdrawFromZkDvp(NFT_ID);
     await waitForTx(tx, 1, `Retirada de NFT por PL A`);
 
-    LogForTest(`Waiting for NFT to be withdrawn`);
+    logInfo(`  Aguardando o NFT ser retirado...`);
     const nftWithdrawn = await pollCondition(
       async (): Promise<boolean> => {
+        if (!ERC721TokenOnPLA) return false;
         return (await ERC721TokenOnPLA!.ownerOf(NFT_ID)) === signerA.address;
       },
       1000,
@@ -733,8 +709,8 @@ async function main() {
     expect(nftWithdrawn).to.be.true;
     logSuccess(`NFT retirado com sucesso por PL A.`);
 
-    logStep(`\n8. PL B Withdraws ${PAYMENT_AMOUNT} Enygmas...`);
-    LogForTest(`PL B withdrawing Enygmas`);
+    logStep(`\n8. PL B Retira ${PAYMENT_AMOUNT} Enygmas...`);
+    LogForTest(`PL B retirando Enygmas`);
 
     const enygmaDeployedOnPLBResult = await pollCondition(
       async (): Promise<Contract | false> => {
@@ -770,24 +746,17 @@ async function main() {
 
     logSuccess(`Enygma token deployado na PL B.`);
 
-    LogForTest(`Withdrawing ${PAYMENT_AMOUNT} Enygmas`);
+    LogForTest(`Retirando ${PAYMENT_AMOUNT} Enygmas`);
     tx = await EnygmaTokenOnPLB!.callWithdrawFromZkDvp(PAYMENT_AMOUNT);
     await waitForTx(tx, 1, `Retirada de ${PAYMENT_AMOUNT} Enygmas por PL B`);
 
-    LogForTest(`Aguardando saque de Enygmas`);
+    logInfo(`  Aguardando saque de Enygmas...`);
     const enygmasWithdrawn = await pollCondition(
       async (): Promise<boolean> => {
+        if (!EnygmaTokenOnPLB) return false;
         const balance = await EnygmaTokenOnPLB!.balanceOf(signerB.address);
-
-        logInfo(
-          ` Balance: ${balance.toString()}`
-        );
-        logInfo(`Valor esperado: ${PAYMENT_AMOUNT}`);
-
         const expectedBalance = ethers.BigNumber.from(PAYMENT_AMOUNT);
-        const comparisonResult = balance.eq(expectedBalance);
-
-        return comparisonResult;
+        return balance.eq(expectedBalance);
       },
       1000,
       300
@@ -798,40 +767,32 @@ async function main() {
     expect(enygmasWithdrawn).to.be.true;
     logSuccess(`Enygmas retirados com sucesso por PL B.`);
 
-    logStep(`\n9. Enygma crossTransfer from PL B to A`);
-    LogForTest(`Cross transferring Enygmas from PL B to A`);
+    logStep(`\n9. Enygma crossTransfer de PL B para A`);
+    LogForTest(`Cross transferring Enygmas de PL B para A`);
 
     const enygmaBalanceBeforeCrossTransfer = await EnygmaTokenOnPLA.balanceOf(
       signerA.address
     );
 
-    LogForTest(`Cross transferring ${PAYMENT_AMOUNT} Enygmas from PL B to A`);
+    LogForTest(`Cross transferring ${PAYMENT_AMOUNT} Enygmas de PL B para A`);
     tx = await EnygmaTokenOnPLB!.crossTransfer(
       [signerA.address],
       [PAYMENT_AMOUNT],
       [chainIdA],
-      [[]]
+      [[]],
+      ZERO_GAS_SETUP
     );
     await waitForTx(tx, 1, `Cross transfer de Enygmas`);
 
-    LogForTest(`Aguardando cross transfer ser completada`);
+    logInfo(`  Aguardando cross transfer ser completada...`);
     const crossTransferCompleted = await pollCondition(
       async (): Promise<boolean> => {
+        if (!EnygmaTokenOnPLA) return false;
         const balance = await EnygmaTokenOnPLA!.balanceOf(signerA.address);
-
-        logInfo(
-          ` Balance: ${balance.toString()}`
-        );
-        logInfo(`Valor Esperado: ${PAYMENT_AMOUNT}`);
-
         const amountToAdd = ethers.BigNumber.from(PAYMENT_AMOUNT);
-
         const expectedBalanceBigNumber =
           enygmaBalanceBeforeCrossTransfer.add(amountToAdd);
-
-        const comparisonResult = balance.eq(expectedBalanceBigNumber);
-
-        return comparisonResult;
+        return balance.eq(expectedBalanceBigNumber);
       },
       1000,
       300
