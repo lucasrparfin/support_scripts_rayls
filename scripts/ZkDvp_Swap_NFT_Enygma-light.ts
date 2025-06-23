@@ -820,7 +820,7 @@ async function main() {
         const balance = await EnygmaTokenOnPLA!.balanceOf(signerA.address);
 
         logInfo(
-          `Balance: ${balance.toString()}`
+          ` Balance: ${balance.toString()}`
         );
         logInfo(`Valor Esperado: ${PAYMENT_AMOUNT}`);
 
@@ -831,7 +831,6 @@ async function main() {
 
         const comparisonResult = balance.eq(expectedBalanceBigNumber);
 
-        logInfo(`  Expected Balance: ${expectedBalanceBigNumber.toString()}`);
         return comparisonResult;
       },
       1000,
