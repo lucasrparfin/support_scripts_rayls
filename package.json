@@ -8,6 +8,10 @@
     "web3-utils": "^1.5.3"
   },
   "scripts": {
-    "test:zkdvp": "npx hardhat run scripts/ZkDvp_Swap_NFT_Enygma-light.ts"
+    "zkdvp": "npx hardhat run scripts/ZkDvp_Swap_NFT_Enygma-light.ts",
+    "sendEnygma": "npx hardhat run scripts/deployAndSendEnygma.ts",
+    "checkEnygma": "npx hardhat run scripts/checkEnygmaBalanceOnReceiver.ts",
+    "sendErc20": "npx hardhat run scripts/deployAndSendErc20.ts",
+    "checkErc20": "npx hardhat run scripts/checkErc20BalanceOnReceiver.ts"
   }
 }

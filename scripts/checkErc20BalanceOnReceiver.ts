@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import * as path from "path";
 
 import {
@@ -33,6 +33,8 @@ async function main() {
   const resourceId = receiverConfig.token.resourceId;
   const endpointAddress = receiverConfig.receiver.endpointAddress;
 
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
   log(`\n--- 🔍 Verificando saldo do receiver ---`);
   logInfo(`URL RPC: ${rpcUrl}`);
   logInfo(`Chain ID: ${chainId}`);
@@ -64,8 +66,8 @@ async function main() {
     );
 
     if (
-      !ethers.isAddress(deployedErc20Address) ||
-      deployedErc20Address === ethers.ZeroAddress
+      !ethers.utils.isAddress(deployedErc20Address) ||
+      deployedErc20Address === ZERO_ADDRESS
     ) {
       throw new Error(
         `Token com Resource ID '${resourceId}' não encontrado ou endereço inválido (${deployedErc20Address}) no Endpoint. Verifique o registro.`
@@ -93,19 +95,25 @@ async function main() {
     const balance = await playgroundErc20Contract.balanceOf(
       receiverWallet.address
     );
-    const formattedBalance = ethers.formatEther(balance);
+
+    const formattedBalance = ethers.utils.formatEther(balance);
     logSuccess(
       `  Saldo do receiver (${receiverWallet.address}): ${formattedBalance} ${tokenSymbol}`
     );
 
     if (expectedAmount !== undefined) {
-      if (parseFloat(formattedBalance) === expectedAmount) {
+      const expectedAmountBigNumber = ethers.utils.parseEther(expectedAmount.toString());
+
+      logInfo(`  Saldo atual (BigNumber): ${balance.toString()}`);
+      logInfo(`  Valor esperado (BigNumber): ${expectedAmountBigNumber.toString()}`);
+
+      if (balance.eq(expectedAmountBigNumber)) {
         logSuccess(
-          `  ✅ Saldo atual (${formattedBalance} ${tokenSymbol}) corresponde ao valor esperado (${expectedAmount} ${tokenSymbol}).`
+          `  ✅ Saldo atual (${formattedBalance} ${tokenSymbol}) corresponde ao valor esperado (${ethers.utils.formatEther(expectedAmountBigNumber)} ${tokenSymbol}).`
         );
       } else {
         logWarning(
-          `  ⚠️ Saldo atual (${formattedBalance} ${tokenSymbol}) NÃO corresponde ao valor esperado (${expectedAmount} ${tokenSymbol}).`
+          `  ⚠️ Saldo atual (${formattedBalance} ${tokenSymbol}) NÃO corresponde ao valor esperado (${ethers.utils.formatEther(expectedAmountBigNumber)} ${tokenSymbol}).`
         );
       }
     }

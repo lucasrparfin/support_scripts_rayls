@@ -86,9 +86,9 @@ export async function waitForTx(
   logInfo(`  Aguardando ${confirmations} confirmações para '${actionName}'...`);
   const receipt = await tx.wait(confirmations);
   if (receipt?.status === 1) {
-    logSuccess(`  '${actionName}' concluída! Hash da Tx: ${receipt.hash}`);
+    logSuccess(`  '${actionName}' concluída! Hash da Tx: ${receipt.transactionHash}`);
   } else {
-    logError(`  '${actionName}' falhou! Hash da Tx: ${receipt.hash}`);
+    logError(`  '${actionName}' falhou! Hash da Tx: ${receipt.transactionHash}`);
     throw new Error(`Transação de '${actionName}' revertida.`);
   }
   return receipt;

@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import * as path from "path";
 
 import {
@@ -88,7 +88,7 @@ async function main() {
       [tokenName, tokenSymbol, endpointAddress],
       tokenName
     );
-    const deployedErc20Address = await playgroundErc20.getAddress();
+    const deployedErc20Address = playgroundErc20.address;
 
     const playgroundErc20Contract = await getContractInstance(
       deployedErc20Address,
@@ -125,6 +125,9 @@ async function main() {
       "Token Registry"
     );
 
+    let ccNonce = await ccWallet.getTransactionCount();
+    logInfo(`  Nonce atual para Commit Chain: ${ccNonce}`);
+
     const allTokens = await tokenRegistryContract.getAllTokens();
     const tokenFromRegistry = allTokens.find(
       (token: any) => token.name === tokenName && token.symbol === tokenSymbol
@@ -144,7 +147,11 @@ async function main() {
     logInfo(`  Atualizando status do token para APROVADO (1)...`);
     const approveTx = await tokenRegistryContract.updateStatus(
       tokenFromRegistry.resourceId,
-      1
+      1,
+      {
+        gasPrice: 0,
+        nonce: ccNonce,
+      }
     );
     await waitForTx(approveTx, 6, `Aprovação de ${tokenName} no TokenRegistry`);
 
@@ -156,10 +163,10 @@ async function main() {
     logInfo(`  - Endereço do Deployer: ${deployerWallet.address}`);
 
     logStep(`\n6. Mintando 1000 tokens para o deployer...`);
-    const mintAmount = ethers.parseEther("1000");
+    const mintAmount = ethers.utils.parseEther("1000");
 
     logInfo(
-      `  Mintando ${ethers.formatEther(
+      `  Mintando ${ethers.utils.formatEther(
         mintAmount
       )} ${tokenSymbol} para o Deployer...`
     );
@@ -178,7 +185,7 @@ async function main() {
       deployerWallet.address
     );
     logInfo(
-      `  Saldo do Deployer após mint: ${ethers.formatEther(
+      `  Saldo do Deployer após mint: ${ethers.utils.formatEther(
         deployerBalanceAfterMint
       )} ${tokenSymbol}`
     );
@@ -187,15 +194,17 @@ async function main() {
     logInfo(`  Endereço do Receiver: ${receiverAddress}`);
     logInfo(`  Chain ID do Receiver: ${receiverChainId}`);
 
+    const teleportAmount = ethers.utils.parseEther("100");
+
     const teleportTx = await playgroundErc20Contract.teleportAtomic(
       receiverAddress,
-      ethers.parseEther("100"),
+      teleportAmount,
       receiverChainId
     );
     await waitForTx(
       teleportTx,
       1,
-      `Teleport de 100 tokens para ${receiverAddress}`
+      `Teleport de ${ethers.utils.formatEther(teleportAmount)} tokens para ${receiverAddress}`
     );
 
     log(`\n--- ✨ Deploy e Registro de Token Finalizados com Sucesso! ---`);
