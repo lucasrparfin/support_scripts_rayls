@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import * as path from "path";
 
 import {
@@ -12,6 +12,12 @@ import {
   getContractInstance,
   waitForTx,
 } from "./utils";
+
+function genRanHex(size: number) {
+  return [...Array(size)]
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join("");
+}
 
 const ccConfig = require(path.join(__dirname, "../config.cc.json"));
 const deployerConfig = require(path.join(__dirname, "../config.deployer.json"));
@@ -33,9 +39,9 @@ const tokenRegistryArtifact = require(path.join(
 ));
 
 async function main() {
-  const randomSuffix = Math.floor(Math.random() * 100000).toString();
-  const tokenName = deployerConfig.token.name + `_${randomSuffix}`;
-  const tokenSymbol = deployerConfig.token.symbol + `_${randomSuffix}`;
+  const randHexSuffix = genRanHex(6);
+  const tokenName = deployerConfig.token.name + `_${randHexSuffix}`;
+  const tokenSymbol = deployerConfig.token.symbol + `_${randHexSuffix}`;
   const deployerPrivateKey = deployerConfig.deployer.privateKey;
   const rpcUrl = deployerConfig.deployer.rpcUrl;
   const chainId = deployerConfig.deployer.chainId;
@@ -82,22 +88,22 @@ async function main() {
         "Commit Chain Deployer"
       );
 
-    const enygmaToken = await deployContract(
-      EnygmaTokenArtifact,
-      deployerWallet,
-      [tokenName, tokenSymbol, endpointAddress],
-      tokenName
-    );
-    const enygmaTokenAddress = await enygmaToken.getAddress();
-
-    const enygmaTokenContract = await getContractInstance(
-      enygmaTokenAddress,
-      EnygmaTokenArtifact.abi,
-      deployerWallet,
-      provider,
-      chainId,
-      tokenName
-    );
+      const enygmaToken = await deployContract(
+        EnygmaTokenArtifact,
+        deployerWallet,
+        [tokenName, tokenSymbol, endpointAddress],
+        tokenName
+      );
+      const enygmaTokenAddress = enygmaToken.address;
+  
+      const enygmaTokenContract = await getContractInstance(
+        enygmaTokenAddress,
+        EnygmaTokenArtifact.abi,
+        deployerWallet,
+        provider,
+        chainId,
+        tokenName
+      );
 
     logStep(`\n3. Chamando submitTokenRegistration(2) no ${tokenName}...`);
     const submitTx = await enygmaTokenContract.submitTokenRegistration(2);
@@ -125,6 +131,9 @@ async function main() {
       "Token Registry"
     );
 
+    let ccNonce = await ccWallet.getTransactionCount();
+    logInfo(`  Nonce atual para Commit Chain: ${ccNonce}`);
+
     const allTokens = await tokenRegistryContract.getAllTokens();
     const tokenFromRegistry = allTokens.find(
       (token: any) => token.name === tokenName && token.symbol === tokenSymbol
@@ -144,7 +153,11 @@ async function main() {
     logInfo(`  Atualizando status do token para APROVADO (1)...`);
     const approveTx = await tokenRegistryContract.updateStatus(
       tokenFromRegistry.resourceId,
-      1
+      1,
+      {
+        gasPrice: 0,
+        nonce: ccNonce,
+      }
     );
     await waitForTx(approveTx, 6, `Aprovação de ${tokenName} no TokenRegistry`);
 
@@ -156,10 +169,10 @@ async function main() {
     logInfo(`  - Endereço do Deployer: ${deployerWallet.address}`);
 
     logStep(`\n6. Mintando 1000 tokens para o deployer...`);
-    const mintAmount = ethers.parseEther("1000");
+    const mintAmount = ethers.utils.parseEther("1000");
 
     logInfo(
-      `  Mintando ${ethers.formatEther(
+      `  Mintando ${ethers.utils.formatEther(
         mintAmount
       )} ${tokenSymbol} para o Deployer...`
     );
@@ -178,7 +191,7 @@ async function main() {
       deployerWallet.address
     );
     logInfo(
-      `  Saldo do Deployer após mint: ${ethers.formatEther(
+      `  Saldo do Deployer após mint: ${ethers.utils.formatEther(
         deployerBalanceAfterMint
       )} ${tokenSymbol}`
     );
@@ -187,16 +200,18 @@ async function main() {
     logInfo(`  Endereço do Receiver: ${receiverAddress}`);
     logInfo(`  Chain ID do Receiver: ${receiverChainId}`);
 
+    const teleportAmount = ethers.utils.parseEther("100");
+
     const teleportTx = await enygmaTokenContract.crossTransfer(
       [receiverAddress],
-      [ethers.parseEther("100")],
+      [teleportAmount],
       [receiverChainId],
       [[]]
     );
     await waitForTx(
       teleportTx,
       1,
-      `Teleport de 100 tokens para ${receiverAddress}`
+      `Teleport de ${ethers.utils.formatEther(teleportAmount)} tokens para ${receiverAddress}`
     );
 
     log(`\n--- ✨ Deploy e Registro de Token Finalizados com Sucesso! ---`);

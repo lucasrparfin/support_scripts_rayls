@@ -15,7 +15,6 @@ import {
   waitForTx,
 } from "./utils";
 
-// Artefatos dos contratos
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
   "../base-artifacts/src/rayls-protocol/test-contracts/EnygmaTokenExample.sol/EnygmaTokenExample.json"
@@ -342,7 +341,6 @@ async function main() {
       "ZkDvpTeleport"
     );
 
-    // Deploy do Enygma Token na PL A
     EnygmaTokenOnPLA = await deployContract(
       EnygmaTokenArtifact,
       signerA,
@@ -350,7 +348,6 @@ async function main() {
       "EnygmaTokenExample"
     );
 
-    // Deploy do ERC721 Token na PL B
     Erc721TokenOnPLB = await deployContract(
       Erc721ZkDvpArtifact,
       signerB,
@@ -368,7 +365,6 @@ async function main() {
     let tx = await EnygmaTokenOnPLA.submitTokenRegistration(0);
     await waitForTx(tx, 1, `submitTokenRegistration para Enygma Token`);
 
-    // Adicionar delay entre transações
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     tx = await Erc721TokenOnPLB.submitTokenRegistration(0);
@@ -408,11 +404,9 @@ async function main() {
 
     LogForTest(`Aprovando recursos no Token Registry...`);
 
-    // Obter o nonce atual e garantir que está atualizado
     let nonce = await signerCC.getTransactionCount();
     logInfo(`  Nonce atual: ${nonce}`);
 
-    // Primeira aprovação
     tx = await TokenRegistry.updateStatus(enygmaTokenResourceId, 1, {
       gasLimit: 5000000,
       nonce: nonce,
@@ -420,14 +414,11 @@ async function main() {
     });
     await waitForTx(tx, 1, `Aprovação de Enygma Token no Token Registry`);
 
-    // Aguardar um tempo para garantir que a transação foi processada
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Atualizar o nonce antes da próxima transação
     nonce = await signerCC.getTransactionCount();
-    logInfo(`  Nonce atualizado: ${nonce}`);
+    logInfo(`  Nonce atualizado para a próxima transação: ${nonce}`);
 
-    // Segunda aprovação com nonce atualizado
     tx = await TokenRegistry.updateStatus(erc721TokenResourceId, 1, {
       gasLimit: 5000000,
       nonce: nonce,
@@ -628,26 +619,21 @@ async function main() {
       async (): Promise<boolean> => {
         const executions = await ZkDvpTeleport.calldataExecutions(sharedId);
 
-        // --- CORREÇÃO AQUI ---
-        // Adicione um log para verificar o tipo exato de 'executions'
         logInfo(
           `  Tipo de 'executions': ${typeof executions}, Valor: ${executions.toString()}`
         );
 
-        // Compare 'executions' (que agora sabemos que não tem .eq) com um BigInt
-        // Convertemos '2' para BigInt para a comparação.
         const expectedValue = 2;
-        const comparisonResult = executions === expectedValue; // Use comparação estrita para BigInt com BigInt
-        // --- FIM DA CORREÇÃO ---
+        const comparisonResult = executions === expectedValue;
 
         logInfo(
           `  Calldata Executions: ${executions.toString()}, Expected: ${expectedValue.toString()}, Match: ${comparisonResult}`
-        ); // Mantém o log para depuração
+        );
 
         return comparisonResult;
       },
       1000,
-      300 // Manter 300 por enquanto, mas pode precisar aumentar se for problema de tempo
+      300
     );
     if (calldataExecuted === false) {
       throw new Error(
@@ -675,20 +661,16 @@ async function main() {
         if (stateChangedLog && stateChangedLog.args) {
           const currentState = stateChangedLog.args.state;
 
-          // Adicione este log para confirmar que continua sendo 'number'
           logInfo(
             `  Tipo de 'stateChangedLog.args.state': ${typeof currentState}, Valor: ${currentState.toString()}`
           );
 
-          // --- CORREÇÃO AQUI ---
-          // Como 'currentState' é um 'number', compare-o diretamente com 0
           return currentState === 0;
-          // --- FIM DA CORREÇÃO ---
         }
-        return false; // Se stateChangedLog ou args não existirem
+        return false;
       },
       1000,
-      300 // Mantenha ou aumente o timeout se o problema persistir após esta correção
+      300
     );
 
     if (swapCompleted === false) {
@@ -784,7 +766,6 @@ async function main() {
     }
     expect(enygmaDeployedOnPLBResult).to.be.not.false;
 
-    // ATENÇÃO AQUI: Atribuição de EnygmaTokenOnPLB após ser obtido
     EnygmaTokenOnPLB = enygmaDeployedOnPLBResult;
 
     logSuccess(`Enygma token deployado na PL B.`);
@@ -798,27 +779,18 @@ async function main() {
       async (): Promise<boolean> => {
         const balance = await EnygmaTokenOnPLB!.balanceOf(signerB.address);
 
-        // Adicione este log para depuração, se quiser:
         logInfo(
-          `  Tipo de 'balance': ${typeof balance}, Valor: ${balance.toString()}`
+          ` Balance: ${balance.toString()}`
         );
-        logInfo(`  Valor esperado (PAYMENT_AMOUNT): ${PAYMENT_AMOUNT}`);
+        logInfo(`Valor esperado: ${PAYMENT_AMOUNT}`);
 
-        // --- CORREÇÃO AQUI ---
-        // 'balance' é um ethers.utils.BigNumber (tipo 'object').
-        // Converta PAYMENT_AMOUNT para BigNumber e use o método .eq() para comparação.
         const expectedBalance = ethers.BigNumber.from(PAYMENT_AMOUNT);
-        const comparisonResult = balance.eq(expectedBalance); // Use .eq() para comparar BigNumber
-
-        logInfo(
-          `  Comparação BigNumber (balance.eq(expected)): ${comparisonResult}`
-        );
-        // --- FIM DA CORREÇÃO ---
+        const comparisonResult = balance.eq(expectedBalance);
 
         return comparisonResult;
       },
       1000,
-      300 // Mantenha 300 ou aumente se o problema persistir APÓS esta correção
+      300
     );
     if (enygmasWithdrawn === false) {
       throw new Error("Enygmas não retirados na PL B dentro do tempo limite.");
@@ -835,7 +807,6 @@ async function main() {
 
     LogForTest(`Cross transferring ${PAYMENT_AMOUNT} Enygmas from PL B to A`);
     tx = await EnygmaTokenOnPLB!.crossTransfer(
-      // Usando o EnygmaTokenOnPLB que acabamos de atribuir
       [signerA.address],
       [PAYMENT_AMOUNT],
       [chainIdA],
@@ -846,45 +817,25 @@ async function main() {
     LogForTest(`Aguardando cross transfer ser completada`);
     const crossTransferCompleted = await pollCondition(
       async (): Promise<boolean> => {
-        const balance = await EnygmaTokenOnPLA!.balanceOf(signerA.address); // 'balance' será um BigNumber (ethers v5)
+        const balance = await EnygmaTokenOnPLA!.balanceOf(signerA.address);
 
-        // Adicione este log crucial para depuração!
         logInfo(
-          `  Tipo de 'balance': ${typeof balance}, Valor: ${
-            balance.toString ? balance.toString() : balance
-          }`
+          `Balance: ${balance.toString()}`
         );
-        logInfo(
-          `  Tipo de 'enygmaBalanceBeforeCrossTransfer': ${typeof enygmaBalanceBeforeCrossTransfer}, Valor: ${
-            enygmaBalanceBeforeCrossTransfer.toString
-              ? enygmaBalanceBeforeCrossTransfer.toString()
-              : enygmaBalanceBeforeCrossTransfer
-          }`
-        );
-        logInfo(`  PAYMENT_AMOUNT (number): ${PAYMENT_AMOUNT}`);
+        logInfo(`Valor Esperado: ${PAYMENT_AMOUNT}`);
 
-        // --- CORREÇÃO AQUI ---
-        // 1. Garanta que 'enygmaBalanceBeforeCrossTransfer' é tratado como BigNumber
-        //    (Ele já deve ser um BigNumber se veio de balanceOf)
-        // 2. Converta PAYMENT_AMOUNT para BigNumber
         const amountToAdd = ethers.BigNumber.from(PAYMENT_AMOUNT);
 
-        // 3. Some os BigNumbers usando o método .add()
         const expectedBalanceBigNumber =
           enygmaBalanceBeforeCrossTransfer.add(amountToAdd);
 
-        // 4. Compare os BigNumbers usando o método .eq()
         const comparisonResult = balance.eq(expectedBalanceBigNumber);
-        // --- FIM DA CORREÇÃO ---
 
         logInfo(`  Expected Balance: ${expectedBalanceBigNumber.toString()}`);
-        logInfo(
-          `  Comparação (balance === expectedBalance): ${comparisonResult}`
-        );
         return comparisonResult;
       },
       1000,
-      300 // Mantenha ou aumente este timeout se o problema persistir após a correção de tipo
+      300
     );
     if (crossTransferCompleted === false) {
       throw new Error(
