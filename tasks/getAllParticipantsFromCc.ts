@@ -1,5 +1,6 @@
 import { task } from "hardhat/config";
 import * as path from "path";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 const ccConfig = require(path.join(__dirname, "../config.cc.json"));
 
@@ -20,7 +21,7 @@ task("getAllParticipantsFromCc", "Get all participants on the VEN").setAction(
       .ccDeploymentProxyRegistry as string;
     const privateKey = ccConfig.commitChain.privateKey as string;
 
-    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const provider = new JsonRpcProvider(rpcUrl);
     const venOperatorWallet = new ethers.Wallet(privateKey);
     const signer = venOperatorWallet.connect(provider);
 

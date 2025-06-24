@@ -1,11 +1,14 @@
-import { ethers, Contract, JsonRpcProvider, Wallet, ContractFactory } from "ethers";
+import { ethers, Contract, Wallet, ContractFactory } from "ethers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 
 export const log = (message: string) => console.log(message);
 export const logSuccess = (message: string) => log(`✅ ${message}`);
 export const logInfo = (message: string) => log(`ℹ️ ${message}`);
 export const logStep = (message: string) => log(`➡️ ${message}`);
-export const logError = (message: string) => console.error(`❌ ERRO: ${message}`);
-export const logWarning = (message: string) => console.warn(`⚠️ ALERTA: ${message}`);
+export const logError = (message: string) =>
+  console.error(`❌ ERRO: ${message}`);
+export const logWarning = (message: string) =>
+  console.warn(`⚠️ ALERTA: ${message}`);
 
 export async function setupWalletAndProvider(
   rpcUrl: string,
@@ -27,19 +30,30 @@ export async function getContractInstance(
   chainId: number,
   contractName: string
 ) {
-  if (!ethers.isAddress(address) || address === ethers.ZeroAddress) {
-    throw new Error(`Endereço de ${contractName} é inválido ou ZeroAddress: '${address}'.`);
+  if (
+    !ethers.utils.isAddress(address) ||
+    address === "0x0000000000000000000000000000000000000000"
+  ) {
+    throw new Error(
+      `Endereço de ${contractName} é inválido ou ZeroAddress: '${address}'.`
+    );
   }
 
   const contract = new Contract(address, abi, wallet) as any;
   logInfo(`  Contrato ${contractName} instanciado em: ${address}`);
 
   const code = await provider.getCode(address);
-  if (code === '0x') {
-    logError(`  ❌ Não há código de contrato no endereço de ${contractName}: ${address}.`);
-    throw new Error(`${contractName} não deployado ou endereço incorreto na rede ${chainId}.`);
+  if (code === "0x") {
+    logError(
+      `  ❌ Não há código de contrato no endereço de ${contractName}: ${address}.`
+    );
+    throw new Error(
+      `${contractName} não deployado ou endereço incorreto na rede ${chainId}.`
+    );
   } else {
-    logInfo(`  Código de contrato encontrado no endereço de ${contractName}. ✅`);
+    logInfo(
+      `  Código de contrato encontrado no endereço de ${contractName}. ✅`
+    );
   }
   return contract;
 }
@@ -58,19 +72,23 @@ export async function deployContract(
   ) as any;
 
   const contract = await factory.deploy(...constructorArgs);
-  await contract.waitForDeployment();
-  const address = await contract.getAddress();
+  await contract.deployed();
+  const address = contract.address;
   logSuccess(`${contractName} deployado com sucesso em: ${address}`);
   return contract;
 }
 
-export async function waitForTx(tx: any, confirmations: number, actionName: string) {
+export async function waitForTx(
+  tx: any,
+  confirmations: number,
+  actionName: string
+) {
   logInfo(`  Aguardando ${confirmations} confirmações para '${actionName}'...`);
   const receipt = await tx.wait(confirmations);
   if (receipt?.status === 1) {
-    logSuccess(`  '${actionName}' concluída! Hash da Tx: ${receipt.hash}`);
+    logSuccess(`  '${actionName}' concluída! Hash da Tx: ${receipt.transactionHash}`);
   } else {
-    logError(`  '${actionName}' falhou! Hash da Tx: ${receipt.hash}`);
+    logError(`  '${actionName}' falhou! Hash da Tx: ${receipt.transactionHash}`);
     throw new Error(`Transação de '${actionName}' revertida.`);
   }
   return receipt;
