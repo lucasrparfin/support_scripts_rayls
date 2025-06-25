@@ -9,7 +9,8 @@
   },
   "scripts": {
     "zkdvp": "npx hardhat run scripts/ZkDvp_Swap_NFT_Enygma-light.ts",
-    "sendEnygma": "npx hardhat run scripts/deployAndSendEnygma.ts",
+    "deployAndSendEnygma": "npx hardhat run scripts/deployAndSendEnygma.ts",
+    "sendEnygma": "npx hardhat run scripts/sendEnygma.ts",
     "checkEnygma": "npx hardhat run scripts/checkEnygmaBalanceOnReceiver.ts",
     "sendErc20": "npx hardhat run scripts/deployAndSendErc20.ts",
     "checkErc20": "npx hardhat run scripts/checkErc20BalanceOnReceiver.ts"

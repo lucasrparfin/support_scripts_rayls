@@ -1,11 +1,11 @@
 {
     "receiver": {
         "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
-        "rpcUrl": "http://rayls-b3-node-1-sandbox.api.blockchain-sandbox.parfin.aws/",
-        "chainId": 13620252,
-        "endpointAddress": "0x53B168CA721C4B486F4FcfF2CfCf5848feaEAf07"
+        "rpcUrl": "https://rayls-privacy-ledger-veiculos.paas.santanderbr.pre.corp:443",
+        "chainId": 90400666,
+        "endpointAddress": "0x423Baed2eFeEA4aF4aFaB9aA7A4e13f1efCE9A3C"
     },
     "token": {
-        "resourceId": "0xb13d2d76d1f4b7be834882e410b3e3a8afaf69f83600ae24db354391d2378d2e"
+        "resourceId": "0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1"
 }
 }

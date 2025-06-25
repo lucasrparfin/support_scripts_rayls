@@ -20,7 +20,7 @@ const EnygmaTokenArtifact = require(path.join(
   "../base-artifacts/src/rayls-protocol/test-contracts/EnygmaTokenExample.sol/EnygmaTokenExample.json"
 ));
 
-const endpointContractArtifact = require(path.join(
+const EndpointContractArtifact = require(path.join(
   __dirname,
   "../base-artifacts/src/rayls-protocol/Endpoint/EndpointV1.sol/EndpointV1.json"
 ));
@@ -39,7 +39,7 @@ async function main() {
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-  const amountToTeleport = ethers.utils.parseEther("100");
+  const amountToTeleport = ethers.utils.parseEther("800");
 
   log(`\n--- 💸 Iniciando o Processo de Envio de Token (Cross-Chain) ---`);
   logInfo(`Configurações carregadas.`);
@@ -72,16 +72,16 @@ async function main() {
     logInfo(`  Endereço do Receiver: ${receiverAddress}`);
 
     logStep(`\n2. Obtendo o endereço do contrato do token pelo Resource ID...`);
-    const endpointContract = await getContractInstance(
+    const EndpointContract = await getContractInstance(
         deployerEndpointAddress,
-        endpointContractArtifact.abi,
+        EndpointContractArtifact.abi,
         deployerWallet,
         provider,
         deployerChainId,
         "Endpoint"
     );
 
-    const deployedTokenAddress = await endpointContract.getAddressByResourceId(
+    const deployedTokenAddress = await EndpointContract.getAddressByResourceId(
       tokenResourceId
     );
     logInfo(

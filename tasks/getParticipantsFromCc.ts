@@ -14,7 +14,7 @@ const ParticipantStorageV1Artifact = require(path.join(
   "../base-artifacts/src/commitChain/ParticipantStorage/ParticipantStorageV1.sol/ParticipantStorageV1.json"
 ));
 
-task("getAllParticipantsFromCc", "Get all participants on the VEN").setAction(
+task("getParticipantsFromCc", "Get all participants on the VEN").setAction(
   async (taskArgs, { ethers }) => {
     const rpcUrl = ccConfig.commitChain.rpcUrl as string;
     const deploymentRegistryAddress = ccConfig.commitChain
@@ -53,7 +53,7 @@ task("getAllParticipantsFromCc", "Get all participants on the VEN").setAction(
       const roleName = roleEnum[Number(participant.role)];
 
       return {
-        "Chain ID": participant.chainId.toString(), // Convert BigInt/BigNumber to string
+        "Chain ID": participant.chainId.toString(),
         Role: roleName,
         Status: statusName,
         "Owner ID": participant.ownerId,
@@ -64,7 +64,7 @@ task("getAllParticipantsFromCc", "Get all participants on the VEN").setAction(
         "Updated At": new Date(
           Number(participant.updatedAt) * 1000
         ).toLocaleString(),
-        "Allowed to Broadcast": participant.allowedToBroadcast ? "Yes" : "No", // Display boolean clearly
+        "Allowed to Broadcast": participant.allowedToBroadcast ? "Yes" : "No",
       };
     });
 
