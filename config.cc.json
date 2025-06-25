@@ -1,8 +1,8 @@
 {
     "commitChain": {
-        "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
-        "rpcUrl": "http://commitchain-sandbox.parfin.corp:8545",
-        "chainId": 381660001,
-        "ccDeploymentProxyRegistry": "0xf04686EbBffeb9913Cd8f3EDdF31718992a1c0A2"
+        "privateKey": "0x4241c98e1816a90600964cccacc802c94eddea6317b4bd23bf5131f5ee4907a7",
+        "rpcUrl": "http://10.11.11.93:8545/",
+        "chainId": 999990001,
+        "ccDeploymentProxyRegistry": "0xF6Aa579906211003d39c145dd8Aee3A6551393E5"
     }
 }
