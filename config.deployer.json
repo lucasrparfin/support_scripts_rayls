@@ -2,12 +2,12 @@
     "token": {
         "name": "Enygma",
         "symbol": "ENY",
-        "resourceId": "0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1"
+        "resourceId": "0x9b4cadfe60474aa355eb3a53ba615819cdaec869a511dce1827cc02afa3cdc1a"
     },
     "deployer": {
         "privateKey": "0x2750ab8523db8bcfca69adc32f37648bd2f2a49b094613ec0d1d5bef5db9feb6",
-        "rpcUrl": "http://rayls-b3-node-0-sandbox.api.blockchain-sandbox.parfin.aws/",
-        "chainId": 1362025,
-        "endpointAddress": "0x1aB49D65baA247B2643933E4D879A4F1f2504875"
+        "rpcUrl": "http://rayls-node-0-sandbox.api.blockchain-sandbox.parfin.aws/",
+        "chainId": 800000,
+        "endpointAddress": "0x6C362F82C5e37F44b2f91BD474dc5be2CEfD598e"
     }
 }

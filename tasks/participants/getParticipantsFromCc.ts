@@ -1,0 +1,104 @@
+import { task } from "hardhat/config";
+import * as path from "path";
+import { JsonRpcProvider } from "@ethersproject/providers";
+
+const ccConfig = require(path.join(__dirname, "../../config.cc.json"));
+
+const DeploymentProxyRegistryArtifact = require(path.join(
+  __dirname,
+  "../../base-artifacts/src/commitChain/DeploymentProxyRegistry/DeploymentProxyRegistry.sol/DeploymentProxyRegistry.json"
+));
+
+const ParticipantStorageV1Artifact = require(path.join(
+  __dirname,
+  "../../base-artifacts/src/commitChain/ParticipantStorage/ParticipantStorageV1.sol/ParticipantStorageV1.json"
+));
+
+const VIEW_CALL_GAS_LIMIT = 30000000; // Assuming 30M gas limit for view calls
+
+task("getParticipantsFromCc", "Get all participants on the VEN").setAction(
+  async (taskArgs, { ethers }) => {
+    const rpcUrl = ccConfig.commitChain.rpcUrl as string;
+    const deploymentRegistryAddress = ccConfig.commitChain
+      .ccDeploymentProxyRegistry as string;
+    const privateKey = ccConfig.commitChain.privateKey as string;
+
+    const provider = new JsonRpcProvider(rpcUrl);
+    const venOperatorWallet = new ethers.Wallet(privateKey);
+    const signer = venOperatorWallet.connect(provider);
+
+    console.log(`\n--- 🚀 Starting Participant Retrieval Process ---`);
+    console.log(`RPC URL: ${rpcUrl}`);
+    console.log(`Deployment Registry Address: ${deploymentRegistryAddress}`);
+    console.log(`Operator Wallet: ${signer.address}`);
+
+    try {
+      const DeploymentProxyRegistryContract = (await ethers.getContractAt(
+        DeploymentProxyRegistryArtifact.abi,
+        deploymentRegistryAddress,
+        signer
+      )) as any;
+
+      const deploymentResult =
+        await DeploymentProxyRegistryContract.getDeployment();
+
+      const ParticipantStorageV1Address =
+        deploymentResult.participantStorageAddress;
+
+      console.log(`Participant Storage Address: ${ParticipantStorageV1Address}`);
+
+      const ParticipantStorageV1Contract = (await ethers.getContractAt(
+        ParticipantStorageV1Artifact.abi,
+        ParticipantStorageV1Address,
+        signer
+      )) as any;
+
+      console.log(`Fetching all participants...`);
+      const participants = await ParticipantStorageV1Contract.getAllParticipants({ gasLimit: VIEW_CALL_GAS_LIMIT });
+
+      const statusEnum = ["NEW", "ACTIVE", "INACTIVE", "FROZEN"];
+      const roleEnum = ["PARTICIPANT", "ISSUER", "AUDITOR"];
+
+      const tableData = participants.map((participant: any) => {
+        const statusName = statusEnum[Number(participant.status)];
+        const roleName = roleEnum[Number(participant.role)];
+
+        return {
+          "Chain ID": participant.chainId.toString(),
+          "Role": roleName,
+          "Status": statusName,
+          "Owner ID": participant.ownerId,
+          "Name": participant.name,
+          "Created At": new Date(
+            Number(participant.createdAt) * 1000
+          ).toLocaleString(),
+          "Updated At": new Date(
+            Number(participant.updatedAt) * 1000
+          ).toLocaleString(),
+          "Allowed to Broadcast": participant.allowedToBroadcast ? "Yes" : "No",
+        };
+      });
+
+      if (tableData.length > 0) {
+        console.table(tableData);
+      } else {
+        console.log("No participants found.");
+      }
+
+      console.log(`\nTotal participants: ${tableData.length}`);
+    } catch (error: any) {
+      console.error(`\n❌ Participant Retrieval Operation Failed:`);
+      console.error(`Message: ${error.message}`);
+      if (error.code === "CALL_EXCEPTION") {
+        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
+      } else if (error.code === "SERVER_ERROR" && error.error && error.error.message) {
+        console.error(`RPC Server Error: ${error.error.message}`);
+      } else if (error.code === "UNSUPPORTED_OPERATION") {
+        console.error(`Unsupported operation by RPC provider.`);
+      } else {
+        console.error(`Unknown Error: ${JSON.stringify(error)}`);
+      }
+      process.exit(1);
+    }
+  }
+);

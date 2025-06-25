@@ -1,9 +1,11 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import "./tasks/getParticipantsFromCc.ts";
-import "./tasks/getParticipantsFromReplica.ts";
-import "./tasks/syncParticipantsFromReplica.ts";
-import "./tasks/getTokensList.ts";
+import "./tasks/participants/getParticipantsFromCc";
+import "./tasks/participants/getParticipantsFromReplica";
+import "./tasks/participants/syncParticipantsFromReplica";
+import "./tasks/tokens/getTokensList";
+import "./tasks/tokens/approveToken";
+import "./tasks/enygma/deployEnygma";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.28",
