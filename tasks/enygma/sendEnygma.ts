@@ -3,8 +3,10 @@ import * as path from "path";
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { Wallet } from "@ethersproject/wallet";
 
-const deployerConfig = require(path.join(__dirname, "../../config.deployer.json"));
-const receiverConfig = require(path.join(__dirname, "../../config.receiver.json"));
+import { loadDeployerConfig, loadReceiverConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { TX_GAS_OPTIONS, ZERO_ADDRESS } from "../../lib/constants";
 
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
@@ -16,15 +18,13 @@ const EndpointContractArtifact = require(path.join(
   "../../base-artifacts/src/rayls-protocol/Endpoint/EndpointV1.sol/EndpointV1.json"
 ));
 
-const TX_GAS_OPTIONS = {
-  gasPrice: 0,
-  gasLimit: 30000000,
-};
-
 task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
   .addOptionalParam("amount", "The amount of tokens to teleport. Defaults to 800.")
   .addOptionalParam("receiverAddress", "The address of the receiver. Defaults to receiverConfig.receiver.address.")
   .setAction(async (taskArgs, { ethers, network }) => {
+
+    const deployerConfig = loadDeployerConfig();
+    const receiverConfig = loadReceiverConfig();
 
     const deployerPrivateKey = deployerConfig.deployer.privateKey;
     const deployerRpcUrl = deployerConfig.deployer.rpcUrl;
@@ -36,10 +36,7 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
     const receiverChainId = receiverConfig.receiver.chainId;
     const receiverPrivateKey = receiverConfig.receiver.privateKey;
 
-    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-    let deployerWallet: Wallet | undefined;
-    let signer: Wallet | undefined;
+    let deployerSigner: Wallet | undefined;
     let amountToTeleportRaw: number;
     let receiverAddress: string;
 
@@ -49,21 +46,20 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
 
     try {
       console.log(`\n1. Setting up Providers and Wallets...`);
-      const deployerProvider = new JsonRpcProvider(deployerRpcUrl);
-      deployerWallet = new ethers.Wallet(deployerPrivateKey, deployerProvider);
-      signer = deployerWallet.connect(deployerProvider);
-      console.log(`  Sender Wallet (Deployer): ${deployerWallet.address}`);
+      const deployerWalletAndSigner = await getWalletAndSigner(deployerPrivateKey, deployerRpcUrl, "Sender");
+      deployerSigner = deployerWalletAndSigner.signer;
+      console.log(`  Sender Wallet (Deployer): ${deployerSigner.address}`);
       console.log(`  Sender RPC URL: ${deployerRpcUrl}`);
       console.log(`  Sender Chain ID: ${deployerChainId}`);
       console.log(`  Sender Endpoint Address: ${deployerEndpointAddress}`);
 
-      const receiverProvider = new JsonRpcProvider(receiverRpcUrl);
-      const tempReceiverWallet = new ethers.Wallet(receiverPrivateKey, receiverProvider);
+      const receiverWalletTempProvider = new JsonRpcProvider(receiverRpcUrl);
+      const receiverWalletTemp = new ethers.Wallet(receiverPrivateKey, receiverWalletTempProvider);
       
       if (taskArgs.receiverAddress) {
         receiverAddress = taskArgs.receiverAddress;
       } else {
-        receiverAddress = tempReceiverWallet.address;
+        receiverAddress = receiverWalletTemp.address;
       }
       console.log(`  Receiver Address: ${receiverAddress}`);
       console.log(`  Receiver Chain ID: ${receiverChainId}`);
@@ -77,10 +73,11 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
       console.log(`  Amount to Teleport (Raw): ${amountToTeleportRaw}`);
 
       console.log(`\n2. Retrieving Token Contract Address from Endpoint...`);
-      const EndpointContract = (await ethers.getContractAt(
+      const EndpointContract = (await getContract(
         EndpointContractArtifact.abi,
         deployerEndpointAddress,
-        deployerWallet
+        deployerSigner,
+        "Endpoint"
       )) as any;
 
       const deployedTokenAddress = await EndpointContract.resourceIdToContractAddress(tokenResourceId);
@@ -91,19 +88,20 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
       }
 
       console.log(`\n3. Instantiating EnygmaToken Contract...`);
-      const enygmaTokenContract = new ethers.Contract(
-        deployedTokenAddress,
+      const enygmaTokenContract = (await getContract(
         EnygmaTokenArtifact.abi,
-        deployerWallet
-      );
+        deployedTokenAddress,
+        deployerSigner,
+        "EnygmaToken"
+      )) as any;
 
       console.log(`\n4. Checking Sender's Balance...`);
       const tokenSymbol = await enygmaTokenContract.symbol();
       const decimals = await enygmaTokenContract.decimals();
       const amountToTeleportWei = ethers.utils.parseUnits(amountToTeleportRaw.toString(), decimals);
 
-      const senderBalance = await enygmaTokenContract.balanceOf(deployerWallet.address);
-      console.log(`  Current Sender Balance (${deployerWallet.address}): ${ethers.utils.formatUnits(senderBalance, decimals)} ${tokenSymbol}`);
+      const senderBalance = await enygmaTokenContract.balanceOf(deployerSigner.address);
+      console.log(`  Current Sender Balance (${deployerSigner.address}): ${ethers.utils.formatUnits(senderBalance, decimals)} ${tokenSymbol}`);
       console.log(`  Amount to Teleport (Wei): ${amountToTeleportWei.toString()}`);
 
       if (senderBalance.lt(amountToTeleportWei)) {
@@ -125,7 +123,7 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
 
       console.log(`\n6. Checking Sender's Balance After Transfer...`);
       const senderBalanceAfter = await enygmaTokenContract.balanceOf(
-        deployerWallet.address
+        deployerSigner.address
       );
       console.log(`  Sender's Balance (Deployer) after transfer: ${ethers.utils.formatUnits(senderBalanceAfter, decimals)} ${tokenSymbol}`);
       console.log(`  To verify receiver's balance, you will need to query the destination network.`);
@@ -133,21 +131,7 @@ task("sendEnygma", "Sends Enygma Token across chains via crossTransfer")
       console.log(`\n--- ✅ Token Cross-Chain Transfer Completed Successfully! ---`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token Cross-Chain Transfer Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "NETWORK_ERROR") {
-        console.error(`Network Error: Check your RPC URL or connection.`);
-        console.info(`  Sender RPC URL: ${deployerRpcUrl}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider. Check compatibility.`);
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        const walletAddressToDisplay = deployerWallet ? deployerWallet.address : `(Wallet not initialized, check private key or RPC: ${deployerPrivateKey ? deployerPrivateKey.substring(0, 6) + '...' : 'N/A'})`;
-        console.error(`Insufficient funds for the transaction. Check account balance: ${walletAddressToDisplay}`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: deployerRpcUrl, walletAddress: deployerSigner ? deployerSigner.address : undefined });
       process.exit(1);
     }
   });

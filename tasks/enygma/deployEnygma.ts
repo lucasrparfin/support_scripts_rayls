@@ -1,9 +1,11 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 
-const ccConfig = require(path.join(__dirname, "../../config.cc.json"));
-const deployerConfig = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadDeployerConfig, loadCcConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract, pollCondition } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { TX_GAS_OPTIONS, VIEW_CALL_GAS_OPTIONS, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS } from "../../lib/constants";
 
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
@@ -26,27 +28,15 @@ function genRanHex(size: number): string {
     .join("");
 }
 
-async function pollCondition(
-  condition: () => Promise<boolean>,
-  interval: number,
-  maxAttempts: number
-): Promise<boolean> {
-  let attempts = 0;
-  while (attempts < maxAttempts) {
-    if (await condition()) {
-      return true;
-    }
-    await new Promise((resolve) => setTimeout(resolve, interval));
-    attempts++;
-  }
-  return false;
-}
-
 task("deployEnygma", "Deploys and registers a Enygma Token")
   .setAction(async (taskArgs, { ethers, network }) => {
     const randHexSuffix = genRanHex(6);
+    const deployerConfig = loadDeployerConfig();
+    const ccConfig = loadCcConfig();
+
     const tokenName = deployerConfig.token.name + `_${randHexSuffix}`;
     const tokenSymbol = deployerConfig.token.symbol + `_${randHexSuffix}`;
+
     const deployerPrivateKey = deployerConfig.deployer.privateKey;
     const rpcUrl = deployerConfig.deployer.rpcUrl;
     const chainId = deployerConfig.deployer.chainId;
@@ -56,12 +46,8 @@ task("deployEnygma", "Deploys and registers a Enygma Token")
     const ccPrivateKey = ccConfig.commitChain.privateKey;
     const ccProxyRegistryAddress = ccConfig.commitChain.ccDeploymentProxyRegistry;
 
-    const ZERO_GAS_SETUP = {
-      gasPrice: 0,
-      gasLimit: 30000000,
-    };
-
-    const VIEW_CALL_GAS_LIMIT = 30000000;
+    let deployerSigner: Wallet | undefined; 
+    let ccSigner: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Token Deploy and Registration Process ---`);
     console.log(`Configurations loaded.`);
@@ -73,19 +59,19 @@ task("deployEnygma", "Deploys and registers a Enygma Token")
 
     try {
       console.log(`\n1. Setting up Providers and Wallets...`);
-      const deployerProvider = new JsonRpcProvider(rpcUrl);
-      const deployerWallet = new ethers.Wallet(deployerPrivateKey, deployerProvider);
-      console.log(`  Deployer Wallet (Main): ${deployerWallet.address}`);
+      const deployerWalletAndSigner = await getWalletAndSigner(deployerPrivateKey, rpcUrl, "Deployer");
+      deployerSigner = deployerWalletAndSigner.signer;
+      console.log(`  Deployer Wallet (Main): ${deployerSigner.address}`);
 
-      const ccProvider = new JsonRpcProvider(ccRpcUrl);
-      const ccWallet = new ethers.Wallet(ccPrivateKey, ccProvider);
-      console.log(`  Commit Chain Wallet: ${ccWallet.address}`);
+      const ccWalletAndSigner = await getWalletAndSigner(ccPrivateKey, ccRpcUrl, "Commit Chain Deployer");
+      ccSigner = ccWalletAndSigner.signer;
+      console.log(`  Commit Chain Wallet: ${ccSigner.address}`);
 
       console.log(`\n2. Deploying ${tokenName} Token...`);
       const EnygmaTokenFactory = new ethers.ContractFactory(
         EnygmaTokenArtifact.abi,
         EnygmaTokenArtifact.bytecode,
-        deployerWallet
+        deployerSigner 
       );
       const enygmaToken = await EnygmaTokenFactory.deploy(
         tokenName,
@@ -98,38 +84,41 @@ task("deployEnygma", "Deploys and registers a Enygma Token")
       const enygmaTokenAddress = enygmaToken.address;
       console.log(`  ${tokenName} Token deployed at: ${enygmaTokenAddress}`);
 
-      const enygmaTokenContract = new ethers.Contract(
-        enygmaTokenAddress,
+      const enygmaTokenContract = (await getContract(
         EnygmaTokenArtifact.abi,
-        deployerWallet
-      );
+        enygmaTokenAddress,
+        deployerSigner, 
+        "EnygmaToken"
+      )) as any;
 
       console.log(`\n3. Calling submitTokenRegistration(2) on ${tokenName}...`);
-      const submitRegTx = await enygmaTokenContract.submitTokenRegistration(2, ZERO_GAS_SETUP);
+      const submitRegTx = await enygmaTokenContract.submitTokenRegistration(2, TX_GAS_OPTIONS);
       await submitRegTx.wait();
       console.log(`  submitTokenRegistration(2) transaction sent. Hash: ${submitRegTx.hash}`);
 
-      const ccProxyRegistryContract = new ethers.Contract(
-        ccProxyRegistryAddress,
+      const ccProxyRegistryContract = (await getContract(
         ccProxyRegistryArtifact.abi,
-        ccWallet
-      );
+        ccProxyRegistryAddress,
+        ccSigner, 
+        "CommitChainProxyRegistry"
+      )) as any;
 
       const deployment = await ccProxyRegistryContract.getDeployment();
       console.log(`  Token Registry Address: ${deployment.tokenRegistryAddress}`);
 
-      const tokenRegistryContract = new ethers.Contract(
-        deployment.tokenRegistryAddress,
+      const tokenRegistryContract = (await getContract(
         tokenRegistryArtifact.abi,
-        ccWallet
-      );
+        deployment.tokenRegistryAddress,
+        ccSigner, 
+        "TokenRegistryV1"
+      )) as any;
 
       console.log(`  Waiting for token '${tokenName}' to appear in TokenRegistry...`);
 
       let tokenResourceId: string | undefined = undefined;
       const tokenFound = await pollCondition(
         async (): Promise<boolean> => {
-          const allTokens = await tokenRegistryContract.getAllTokens({ gasLimit: VIEW_CALL_GAS_LIMIT });
+          const allTokens = await tokenRegistryContract.getAllTokens(VIEW_CALL_GAS_OPTIONS);
           const foundToken = allTokens.find(
             (token: any) =>
               token.name === tokenName && token.symbol === tokenSymbol
@@ -140,8 +129,8 @@ task("deployEnygma", "Deploys and registers a Enygma Token")
           }
           return false;
         },
-        10000,
-        30
+        POLL_INTERVAL_MS,
+        MAX_POLL_ATTEMPTS
       );
 
       if (!tokenFound || !tokenResourceId) {
@@ -159,26 +148,12 @@ task("deployEnygma", "Deploys and registers a Enygma Token")
       const deployedSymbol = await enygmaTokenContract.symbol();
       console.log(`  - Token Name: ${deployedName}`);
       console.log(`  - Token Symbol: ${deployedSymbol}`);
-      console.log(`  - Deployer Address: ${deployerWallet.address}`);
+      console.log(`  - Deployer Address: ${deployerSigner.address}`);
 
       console.log(`\n--- ✨ Token Deploy and Registration Finished Successfully! ---`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token Deploy and Registration Operation Failed:`);
-      console.error(`  Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION" && error.data) {
-        console.error(`  EVM Revert Details: ${JSON.stringify(error.data)}`);
-      } else if (error.code === "NETWORK_ERROR") {
-        console.error(`  Network Error: Check your RPC URL or connection.`);
-        console.info(`    Main RPC URL: ${rpcUrl}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(
-          `  Unsupported operation by RPC provider. Check compatibility.`
-        );
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        const deployerWallet = new ethers.Wallet(deployerPrivateKey, new JsonRpcProvider(rpcUrl));
-        console.error(`  Insufficient funds for the transaction. Check account balance: ${deployerWallet.address}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: deployerSigner ? deployerSigner.address : undefined });
       process.exit(1);
     }
   });

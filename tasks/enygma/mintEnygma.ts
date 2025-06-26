@@ -1,9 +1,10 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
 import { Wallet } from "@ethersproject/wallet";
 
-const deployerConfig = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadDeployerConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
 
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
@@ -17,6 +18,8 @@ const EndpointContractArtifact = require(path.join(
 
 task("mintEnygma", "Mint Enygma Token into a wallet")
   .setAction(async (taskArgs, { ethers, network }) => {
+    const deployerConfig = loadDeployerConfig();
+
     const deployerPrivateKey = deployerConfig.deployer.privateKey;
     const rpcUrl = deployerConfig.deployer.rpcUrl;
     const chainId = deployerConfig.deployer.chainId;
@@ -24,8 +27,7 @@ task("mintEnygma", "Mint Enygma Token into a wallet")
     const resourceId = deployerConfig.token.resourceId as string;
     const amountToMint = 1000;
 
-    let deployerWallet: Wallet;
-    let signer: Wallet;
+    let deployerSigner: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Token Minting Process ---`);
     console.log(`Configurations loaded.`);
@@ -36,25 +38,26 @@ task("mintEnygma", "Mint Enygma Token into a wallet")
 
     try {
       console.log(`\n1. Setting up Providers and Wallets...`);
-      const deployerProvider = new JsonRpcProvider(rpcUrl);
-      deployerWallet = new ethers.Wallet(deployerPrivateKey, deployerProvider);
-      signer = deployerWallet.connect(deployerProvider);
-      console.log(`  Deployer Wallet (Main): ${deployerWallet.address}`);
+      const walletAndSigner = await getWalletAndSigner(deployerPrivateKey, rpcUrl, "Deployer");
+      deployerSigner = walletAndSigner.signer;
+      console.log(`  Deployer Wallet (Main): ${deployerSigner.address}`);
 
-      const EndpointContract = (await ethers.getContractAt(
+      const EndpointContract = (await getContract(
         EndpointContractArtifact.abi,
         endpointAddress,
-        deployerWallet
+        deployerSigner,
+        "Endpoint"
       )) as any;
 
       console.log(`\n2. Retrieving Token Address for Resource ID ${resourceId}...`);
       const enygmaTokenAddress = await EndpointContract.resourceIdToContractAddress(resourceId);
 
-      const enygmaTokenContract = new ethers.Contract(
-        enygmaTokenAddress,
+      const enygmaTokenContract = (await getContract(
         EnygmaTokenArtifact.abi,
-        deployerWallet
-      );
+        enygmaTokenAddress,
+        deployerSigner,
+        "EnygmaToken"
+      )) as any;
 
       console.log(`✅ Token contract found at address: ${enygmaTokenAddress}`);
 
@@ -63,25 +66,25 @@ task("mintEnygma", "Mint Enygma Token into a wallet")
       const deployedSymbol = await enygmaTokenContract.symbol();
       console.log(`  - Token Name: ${deployedName}`);
       console.log(`  - Token Symbol: ${deployedSymbol}`);
-      console.log(`  - Deployer Address: ${deployerWallet.address}`);
+      console.log(`  - Deployer Address: ${deployerSigner.address}`);
 
       console.log(`\n4. Checking balance before minting...`);
       const decimals = await enygmaTokenContract.decimals();
-      const initialBalance = await enygmaTokenContract.balanceOf(deployerWallet.address);
-      console.log(`  Initial balance of ${deployerWallet.address}: ${ethers.utils.formatUnits(initialBalance, decimals)} ${deployedSymbol}`);
+      const initialBalance = await enygmaTokenContract.balanceOf(deployerSigner.address);
+      console.log(`  Initial balance of ${deployerSigner.address}: ${ethers.utils.formatUnits(initialBalance, decimals)} ${deployedSymbol}`);
 
-      console.log(`\n5. Minting ${amountToMint} tokens to ${deployerWallet.address}...`);
+      console.log(`\n5. Minting ${amountToMint} tokens to ${deployerSigner.address}...`);
 
       const mintAmountWei = ethers.utils.parseUnits(amountToMint.toString(), decimals);
 
-      const tx = await enygmaTokenContract.mint(deployerWallet.address, mintAmountWei);
+      const tx = await enygmaTokenContract.mint(deployerSigner.address, mintAmountWei);
       console.log(`  Mint transaction sent. Hash: ${tx.hash}`);
       await tx.wait();
       console.log(`  Mint transaction confirmed.`);
 
       console.log(`\n6. Checking balance after minting...`);
-      const finalBalance = await enygmaTokenContract.balanceOf(deployerWallet.address);
-      console.log(`  Final balance of ${deployerWallet.address}: ${ethers.utils.formatUnits(finalBalance, decimals)} ${deployedSymbol}`);
+      const finalBalance = await enygmaTokenContract.balanceOf(deployerSigner.address);
+      console.log(`  Final balance of ${deployerSigner.address}: ${ethers.utils.formatUnits(finalBalance, decimals)} ${deployedSymbol}`);
 
       if (finalBalance.gt(initialBalance)) {
         console.log(`✅ Mint successful! Balance increased by ${ethers.utils.formatUnits(finalBalance.sub(initialBalance), decimals)} ${deployedSymbol}.`);
@@ -92,21 +95,7 @@ task("mintEnygma", "Mint Enygma Token into a wallet")
       console.log(`\n--- ✨ Token Minting Process Finished Successfully! ---`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token Minting Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "NETWORK_ERROR") {
-        console.error(`Network Error: Check your RPC URL or connection.`);
-        console.info(`  Main RPC URL: ${rpcUrl}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider. Check compatibility.`);
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        // Avoid referencing deployerWallet if it may not be assigned
-        console.error(`Insufficient funds for the transaction. Check account balance.`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: deployerSigner ? deployerSigner.address : undefined });
       process.exit(1);
     }
   });

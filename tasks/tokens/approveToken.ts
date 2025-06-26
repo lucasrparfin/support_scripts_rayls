@@ -1,9 +1,11 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 
-const ccConfig = require(path.join(__dirname, "../../config.cc.json"));
-const deployerConfig = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadCcConfig, loadDeployerConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { TX_GAS_OPTIONS, VIEW_CALL_GAS_OPTIONS } from "../../lib/constants";
 
 const DeploymentProxyRegistryArtifact = require(path.join(
   __dirname,
@@ -15,35 +17,35 @@ const TokenRegistryV1Artifact = require(path.join(
   "../../base-artifacts/src/commitChain/TokenRegistry/TokenRegistryV1.sol/TokenRegistryV1.json"
 ));
 
-const ZERO_GAS_SETUP = {
-  gasPrice: 0,
-  gasLimit: 30000000,
-};
-
 task("approveToken", "Approve a token using the resourceId").setAction(
   async (taskArgs, { ethers }) => {
+    const ccConfig = loadCcConfig();
+    const deployerConfig = loadDeployerConfig();
+
     const rpcUrl = ccConfig.commitChain.rpcUrl as string;
     const deploymentRegistryAddress = ccConfig.commitChain
       .ccDeploymentProxyRegistry as string;
     const privateKey = ccConfig.commitChain.privateKey as string;
 
-    const provider = new JsonRpcProvider(rpcUrl);
-    const venOperatorWallet = new ethers.Wallet(privateKey);
-    const signer = venOperatorWallet.connect(provider);
-
     const resourceId = deployerConfig.token.resourceId as string;
+
+    let signer: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Token Approval Process ---`);
     console.log(`RPC URL: ${rpcUrl}`);
     console.log(`Deployment Registry Address: ${deploymentRegistryAddress}`);
     console.log(`Resource ID to approve: ${resourceId}`);
-    console.log(`Operator Wallet: ${signer.address}`);
 
     try {
-      const DeploymentProxyRegistryContract = (await ethers.getContractAt(
+      const walletAndSigner = await getWalletAndSigner(privateKey, rpcUrl, "Operator");
+      signer = walletAndSigner.signer;
+      console.log(`Operator Wallet: ${signer.address}`);
+
+      const DeploymentProxyRegistryContract = (await getContract(
         DeploymentProxyRegistryArtifact.abi,
         deploymentRegistryAddress,
-        signer
+        signer,
+        "DeploymentProxyRegistry"
       )) as any;
 
       const deploymentResult =
@@ -54,14 +56,15 @@ task("approveToken", "Approve a token using the resourceId").setAction(
 
       console.log(`Token Registry Address: ${TokenRegistryV1Address}`);
 
-      const TokenRegistryV1Contract = (await ethers.getContractAt(
+      const TokenRegistryV1Contract = (await getContract(
         TokenRegistryV1Artifact.abi,
         TokenRegistryV1Address,
-        signer
+        signer,
+        "TokenRegistryV1"
       )) as any;
 
       console.log(`Fetching all tokens to check status...`);
-      const tokens = await TokenRegistryV1Contract.getAllTokens(ZERO_GAS_SETUP);
+      const tokens = await TokenRegistryV1Contract.getAllTokens(VIEW_CALL_GAS_OPTIONS);
 
       const foundToken = tokens.find(
         (token: any) => token.resourceId.toLowerCase() === resourceId.toLowerCase()
@@ -80,25 +83,13 @@ task("approveToken", "Approve a token using the resourceId").setAction(
       console.log(`Current status of token ${resourceId}: ${foundToken.status}`);
       console.log(`Approving token ${resourceId} ...`);
       
-      const tx = await TokenRegistryV1Contract.updateStatus(resourceId, 1, ZERO_GAS_SETUP);
+      const tx = await TokenRegistryV1Contract.updateStatus(resourceId, 1, TX_GAS_OPTIONS);
       await tx.wait();
 
       console.log(`\n✅ Token with resource ID ${resourceId} approved! Transaction Hash: ${tx.hash}`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token Approval Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "SERVER_ERROR" && error.error && error.error.message) {
-        console.error(`RPC Server Error: ${error.error.message}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider.`);
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        console.error(`Insufficient funds for the transaction. Check account balance: ${signer.address}`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: signer ? signer.address : undefined });
       process.exit(1);
     }
   }

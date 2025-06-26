@@ -1,8 +1,11 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 
-const config = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadDeployerConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { TX_GAS_OPTIONS, VIEW_CALL_GAS_OPTIONS } from "../../lib/constants";
 
 const ParticipantStorageV1ReplicaArtifact = require(path.join(
   __dirname,
@@ -14,50 +17,50 @@ const EndpointContractArtifact = require(path.join(
   "../../base-artifacts/src/rayls-protocol/Endpoint/EndpointV1.sol/EndpointV1.json"
 ));
 
-const ZERO_GAS_SETUP = {
-  gasPrice: 0,
-  gasLimit: 30000000,
-};
-
 task("syncAllParticipantsFromReplica", "Sync all participants from CC to the Replica").setAction(
   async (taskArgs, { ethers }) => {
+    const config = loadDeployerConfig();
 
     const privateKey = config.deployer.privateKey as string;
     const rpcUrl = config.deployer.rpcUrl as string;
-    const provider = new JsonRpcProvider(rpcUrl);
-    const wallet = new ethers.Wallet(privateKey);
-    const signer = wallet.connect(provider);
     const endpointAddress = config.deployer.endpointAddress as string;
+
+    let signer: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Participant Sync from Commit Chain to Replica Process ---`);
     console.log(`RPC URL: ${rpcUrl}`);
     console.log(`Endpoint Address: ${endpointAddress}`);
-    console.log(`Deployer Wallet: ${signer.address}`);
 
     try {
-      const EndpointContract = (await ethers.getContractAt(
+      const walletAndSigner = await getWalletAndSigner(privateKey, rpcUrl, "Deployer");
+      signer = walletAndSigner.signer;
+      console.log(`Deployer Wallet: ${signer.address}`);
+
+      const EndpointContract = (await getContract(
         EndpointContractArtifact.abi,
         endpointAddress,
-        signer
+        signer,
+        "Endpoint"
       )) as any;
 
       const participantStorageReplicaAddress = await EndpointContract.resourceIdToContractAddress("0x0000000000000000000000000000000000000000000000000000000000000001");
 
       console.log(`Participant Replica Address: ${participantStorageReplicaAddress}`);
 
-      const ParticipantStorageV1ReplicaContract = (await ethers.getContractAt(
+      const ParticipantStorageV1ReplicaContract = (await getContract(
         ParticipantStorageV1ReplicaArtifact.abi,
         participantStorageReplicaAddress,
-        signer
+        signer,
+        "ParticipantStorageV1Replica"
       )) as any;
 
       console.log(`Fetching participants before sync...`);
-      let beforeParticipants = await ParticipantStorageV1ReplicaContract.getAllParticipants(ZERO_GAS_SETUP);
+      let beforeParticipants = await ParticipantStorageV1ReplicaContract.getAllParticipants(VIEW_CALL_GAS_OPTIONS);
 
       console.log(`Before sync: ${beforeParticipants.length} participants`);
 
       console.log(`Requesting all participants data from Commit Chain...`);
-      const tx = await ParticipantStorageV1ReplicaContract.requestAllParticipantsDataFromCommitChain(ZERO_GAS_SETUP);
+      const tx = await ParticipantStorageV1ReplicaContract.requestAllParticipantsDataFromCommitChain(TX_GAS_OPTIONS);
       console.log(`Request transaction sent: ${tx.hash}`);
       await tx.wait();
       console.log('Request confirmed. Waiting 60 seconds for sync...');
@@ -65,7 +68,7 @@ task("syncAllParticipantsFromReplica", "Sync all participants from CC to the Rep
       await new Promise((resolve) => setTimeout(resolve, 60000));
 
       console.log(`Fetching participants after sync...`);
-      let afterParticipants = await ParticipantStorageV1ReplicaContract.getAllParticipants(ZERO_GAS_SETUP);
+      let afterParticipants = await ParticipantStorageV1ReplicaContract.getAllParticipants(VIEW_CALL_GAS_OPTIONS);
 
       console.log('After sync participants list: ');
 
@@ -108,19 +111,7 @@ task("syncAllParticipantsFromReplica", "Sync all participants from CC to the Rep
         console.error('❌ Unexpected issue: participant count decreased.');
       }
     } catch (error: any) {
-      console.error(`\n❌ Participant Sync Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "SERVER_ERROR" && error.error && error.error.message) {
-        console.error(`RPC Server Error: ${error.error.message}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider.`);
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        console.error(`Insufficient funds for the transaction. Check account balance: ${signer.address}`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: signer ? signer.address : undefined });
       process.exit(1);
     }
   }

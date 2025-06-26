@@ -1,8 +1,11 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 
-const config = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadDeployerConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { VIEW_CALL_GAS_OPTIONS } from "../../lib/constants";
 
 const ParticipantStorageV1ReplicaArtifact = require(path.join(
   __dirname,
@@ -14,42 +17,45 @@ const EndpointContractArtifact = require(path.join(
   "../../base-artifacts/src/rayls-protocol/Endpoint/EndpointV1.sol/EndpointV1.json"
 ));
 
-const VIEW_CALL_GAS_LIMIT = 30000000;
-
 task("getAllParticipantsFromReplica", "Get all participants on the Replica").setAction(
   async (taskArgs, { ethers }) => {
+    const deployerConfig = loadDeployerConfig();
 
-    const privateKey = config.deployer.privateKey as string;
-    const rpcUrl = config.deployer.rpcUrl as string;
-    const provider = new JsonRpcProvider(rpcUrl);
-    const wallet = new ethers.Wallet(privateKey);
-    const signer = wallet.connect(provider);
-    const endpointAddress = config.deployer.endpointAddress as string;
+    const privateKey = deployerConfig.deployer.privateKey as string;
+    const rpcUrl = deployerConfig.deployer.rpcUrl as string;
+    const endpointAddress = deployerConfig.deployer.endpointAddress as string;
+
+    let signer: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Participant Retrieval From Replica Process ---`);
     console.log(`RPC URL: ${rpcUrl}`);
     console.log(`Endpoint Address: ${endpointAddress}`);
-    console.log(`Deployer Wallet: ${signer.address}`);
 
     try {
-      const EndpointContract = (await ethers.getContractAt(
+      const walletAndSigner = await getWalletAndSigner(privateKey, rpcUrl, "Deployer");
+      signer = walletAndSigner.signer;
+      console.log(`Deployer Wallet: ${signer.address}`);
+
+      const EndpointContract = (await getContract(
         EndpointContractArtifact.abi,
         endpointAddress,
-        signer
+        signer,
+        "Endpoint"
       )) as any;
 
       const participantStorageReplicaAddress = await EndpointContract.resourceIdToContractAddress("0x0000000000000000000000000000000000000000000000000000000000000001");
 
       console.log(`Participant Replica Address: ${participantStorageReplicaAddress}`);
 
-      const ParticipantStorageV1ReplicaContract = (await ethers.getContractAt(
+      const ParticipantStorageV1ReplicaContract = (await getContract(
         ParticipantStorageV1ReplicaArtifact.abi,
         participantStorageReplicaAddress,
-        signer
+        signer,
+        "ParticipantStorageV1Replica"
       )) as any;
 
       console.log(`Fetching all participants from Replica...`);
-      let participants = await ParticipantStorageV1ReplicaContract.getAllParticipants({ gasLimit: VIEW_CALL_GAS_LIMIT });
+      let participants = await ParticipantStorageV1ReplicaContract.getAllParticipants(VIEW_CALL_GAS_OPTIONS);
 
       const statusEnum = ["NEW", "ACTIVE", "INACTIVE", "FROZEN"];
       const roleEnum = ["PARTICIPANT", "ISSUER", "AUDITOR"];
@@ -83,17 +89,7 @@ task("getAllParticipantsFromReplica", "Get all participants on the Replica").set
       console.log(`\nTotal participants: ${tableData.length}`);
 
     } catch (error: any) {
-      console.error(`\n❌ Participant Retrieval From Replica Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "SERVER_ERROR" && error.error && error.error.message) {
-        console.error(`RPC Server Error: ${error.error.message}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider.`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: signer ? signer.address : undefined });
       process.exit(1);
     }
   }

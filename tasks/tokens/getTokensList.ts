@@ -1,8 +1,11 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 
-const ccConfig = require(path.join(__dirname, "../../config.cc.json"));
+import { loadCcConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
+import { VIEW_CALL_GAS_OPTIONS } from "../../lib/constants";
 
 const DeploymentProxyRegistryArtifact = require(path.join(
   __dirname,
@@ -14,31 +17,31 @@ const TokenRegistryV1Artifact = require(path.join(
   "../../base-artifacts/src/commitChain/TokenRegistry/TokenRegistryV1.sol/TokenRegistryV1.json"
 ));
 
-const VIEW_CALL_GAS_OPTIONS = {
-  gasLimit: 30000000,
-};
-
 task("getTokensList", "Get all Tokens on the VEN").setAction(
   async (taskArgs, { ethers }) => {
+    const ccConfig = loadCcConfig();
+
     const rpcUrl = ccConfig.commitChain.rpcUrl as string;
     const deploymentRegistryAddress = ccConfig.commitChain
       .ccDeploymentProxyRegistry as string;
     const privateKey = ccConfig.commitChain.privateKey as string;
 
-    const provider = new JsonRpcProvider(rpcUrl);
-    const venOperatorWallet = new ethers.Wallet(privateKey);
-    const signer = venOperatorWallet.connect(provider);
+    let signer: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Token List Retrieval Process ---`);
     console.log(`RPC URL: ${rpcUrl}`);
     console.log(`Deployment Registry Address: ${deploymentRegistryAddress}`);
-    console.log(`Operator Wallet: ${signer.address}`);
 
     try {
-      const DeploymentProxyRegistryContract = (await ethers.getContractAt(
+      const walletAndSigner = await getWalletAndSigner(privateKey, rpcUrl, "Operator");
+      signer = walletAndSigner.signer;
+      console.log(`Operator Wallet: ${signer.address}`);
+
+      const DeploymentProxyRegistryContract = (await getContract(
         DeploymentProxyRegistryArtifact.abi,
         deploymentRegistryAddress,
-        signer
+        signer,
+        "DeploymentProxyRegistry"
       )) as any;
 
       const deploymentResult =
@@ -49,10 +52,11 @@ task("getTokensList", "Get all Tokens on the VEN").setAction(
 
       console.log(`Token Registry Address: ${TokenRegistryV1Address}`);
 
-      const TokenRegistryV1Contract = (await ethers.getContractAt(
+      const TokenRegistryV1Contract = (await getContract(
         TokenRegistryV1Artifact.abi,
         TokenRegistryV1Address,
-        signer
+        signer,
+        "TokenRegistryV1"
       )) as any;
 
       console.log(`Fetching all tokens...`);
@@ -88,17 +92,7 @@ task("getTokensList", "Get all Tokens on the VEN").setAction(
       console.log(`\nTotal tokens: ${tableData.length}`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token List Retrieval Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "SERVER_ERROR" && error.error && error.error.message) {
-        console.error(`RPC Server Error: ${error.error.message}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider.`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: signer ? signer.address : undefined });
       process.exit(1);
     }
   }

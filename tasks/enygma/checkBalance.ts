@@ -1,9 +1,10 @@
 import { task } from "hardhat/config";
 import * as path from "path";
-import { JsonRpcProvider } from "@ethersproject/providers";
 import { Wallet } from "@ethersproject/wallet";
 
-const deployerConfig = require(path.join(__dirname, "../../config.deployer.json"));
+import { loadDeployerConfig } from "../../lib/config-loader";
+import { getWalletAndSigner, getContract } from "../../lib/contract-helpers";
+import { handleTaskError } from "../../lib/error-handler";
 
 const EnygmaTokenArtifact = require(path.join(
   __dirname,
@@ -18,6 +19,8 @@ const EndpointContractArtifact = require(path.join(
 task("checkBalance", "Check Enygma Token balance of a wallet")
   .addOptionalParam("walletAddress", "The address of the wallet to check balance for. Defaults to deployer wallet.")
   .setAction(async (taskArgs, { ethers, network }) => {
+    const deployerConfig = loadDeployerConfig();
+
     const deployerPrivateKey = deployerConfig.deployer.privateKey;
     const rpcUrl = deployerConfig.deployer.rpcUrl;
     const endpointAddress = deployerConfig.deployer.endpointAddress;
@@ -25,8 +28,8 @@ task("checkBalance", "Check Enygma Token balance of a wallet")
     
     let targetWalletAddress: string;
 
-    let deployerWallet: Wallet;
-    let signer: Wallet;
+    let deployerWallet: Wallet | undefined;
+    let signer: Wallet | undefined;
 
     console.log(`\n--- 🚀 Starting Token Balance Check Process ---`);
     console.log(`Configurations loaded.`);
@@ -36,9 +39,9 @@ task("checkBalance", "Check Enygma Token balance of a wallet")
 
     try {
       console.log(`\n1. Setting up Providers and Wallets...`);
-      const deployerProvider = new JsonRpcProvider(rpcUrl);
-      deployerWallet = new ethers.Wallet(deployerPrivateKey, deployerProvider);
-      signer = deployerWallet.connect(deployerProvider);
+      const walletAndSigner = await getWalletAndSigner(deployerPrivateKey, rpcUrl, "Deployer");
+      deployerWallet = walletAndSigner.wallet;
+      signer = walletAndSigner.signer;
       console.log(`  Deployer Wallet (Main): ${deployerWallet.address}`);
 
       if (taskArgs.walletAddress) {
@@ -49,20 +52,22 @@ task("checkBalance", "Check Enygma Token balance of a wallet")
         console.log(`  Checking balance for Deployer Wallet (default): ${targetWalletAddress}`);
       }
 
-      const EndpointContract = (await ethers.getContractAt(
+      const EndpointContract = (await getContract(
         EndpointContractArtifact.abi,
         endpointAddress,
-        deployerWallet
+        signer,
+        "Endpoint"
       )) as any;
 
       console.log(`\n2. Retrieving Token Address for Resource ID ${resourceId}...`);
       const enygmaTokenAddress = await EndpointContract.resourceIdToContractAddress(resourceId);
 
-      const enygmaTokenContract = new ethers.Contract(
-        enygmaTokenAddress,
+      const enygmaTokenContract = (await getContract(
         EnygmaTokenArtifact.abi,
-        deployerWallet
-      );
+        enygmaTokenAddress,
+        signer,
+        "EnygmaToken"
+      )) as any;
 
       console.log(`✅ Token contract found at address: ${enygmaTokenAddress}`);
 
@@ -80,20 +85,7 @@ task("checkBalance", "Check Enygma Token balance of a wallet")
       console.log(`\n--- ✨ Token Balance Check Finished Successfully! ---`);
 
     } catch (error: any) {
-      console.error(`\n❌ Token Balance Check Operation Failed:`);
-      console.error(`Message: ${error.message}`);
-      if (error.code === "CALL_EXCEPTION") {
-        console.error(`EVM Revert Details: ${JSON.stringify(error.data || error.reason)}`);
-      } else if (error.code === "NETWORK_ERROR") {
-        console.error(`Network Error: Check your RPC URL or connection.`);
-        console.info(`  Main RPC URL: ${rpcUrl}`);
-      } else if (error.code === "UNSUPPORTED_OPERATION") {
-        console.error(`Unsupported operation by RPC provider. Check compatibility.`);
-      } else if (error.code === "INSUFFICIENT_FUNDS") {
-        console.error(`Insufficient funds for the transaction. Check account balance.`);
-      } else {
-        console.error(`Unknown Error: ${JSON.stringify(error)}`);
-      }
+      handleTaskError(error, { rpcUrl: rpcUrl, walletAddress: deployerWallet ? deployerWallet.address : undefined });
       process.exit(1);
     }
   });
