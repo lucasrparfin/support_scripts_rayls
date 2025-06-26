@@ -6,6 +6,9 @@ import "./tasks/participants/syncParticipantsFromReplica";
 import "./tasks/tokens/getTokensList";
 import "./tasks/tokens/approveToken";
 import "./tasks/enygma/deployEnygma";
+import "./tasks/enygma/mintEnygma";
+import "./tasks/enygma/checkBalance";
+import "./tasks/enygma/sendEnygma";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.28",
